@@ -28,13 +28,13 @@ jobs:
     - name: Test message extraction
       run: |
         cd fluent-i18n-examples/simple-web-app
-        mvn fluent:i18n:extract
+        mvn fluent-i18n:extract
         echo "Extraction completed"
 
     - name: Test message compilation
       run: |
         cd fluent-i18n-examples/simple-web-app
-        mvn fluent:i18n:compile
+        mvn fluent-i18n:compile
         echo "Compilation completed"
 
     - name: Verify generated files
