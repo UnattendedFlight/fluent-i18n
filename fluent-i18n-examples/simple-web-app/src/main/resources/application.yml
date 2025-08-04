@@ -1,0 +1,56 @@
+fluent:
+  i18n:
+    enabled: true
+    default-locale: en
+    supported-locales:
+      - en
+      - nb
+      - sv
+      - da
+      - fi
+      - fr
+      - de
+      - es
+      - it
+      - pt
+      - nl
+      - pl
+      - ru
+      - zh
+      - ja
+      - ko
+
+    message-source:
+      type: binary
+      basename: i18n/messages
+      cache-duration: PT1H
+      use-original-as-fallback: true
+      log-missing-translations: true
+
+    compilation:
+      output-format: binary,json,properties
+      validation: true
+      preserve-existing: true
+      minify-output: false
+      include-metadata: true
+
+    warm-up:
+      enabled: true
+      locales:
+        - en
+        - nb
+        - sv
+        - da
+
+    web:
+      enabled: true
+      locale-parameter: lang
+      use-accept-language-header: true
+      use-session: true
+      set-content-language-header: true
+
+# Logging configuration
+logging:
+  level:
+    io.github.unattendedflight.fluent.i18n: DEBUG
+    com.example.fluenti18n: DEBUG

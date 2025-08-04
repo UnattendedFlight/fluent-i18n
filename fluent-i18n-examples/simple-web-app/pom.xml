@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.0</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>fluent-i18n-demo-app</artifactId>
+    <version>1.0.0</version>
+    <name>Fluent i18n Demo Application</name>
+    <description>Demo application for Fluent i18n natural text approach</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <fluent-i18n.version>1.0.0-SNAPSHOT</fluent-i18n.version>
+    </properties>
+
+    <dependencies>
+        <!-- Fluent i18n Starter -->
+        <dependency>
+            <groupId>io.github.unattendedflight.fluent</groupId>
+            <artifactId>fluent-i18n-spring-boot-starter</artifactId>
+            <version>${fluent-i18n.version}</version>
+        </dependency>
+
+        <!-- Web and Thymeleaf -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- Development tools -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            
+            <!-- Fluent i18n Maven Plugin -->
+            <plugin>
+                <groupId>io.github.unattendedflight.fluent</groupId>
+                <artifactId>fluent-i18n-maven-plugin</artifactId>
+                <version>${fluent-i18n.version}</version>
+                <configuration>
+                    <supportedLocales>en,nb,sv,da</supportedLocales>
+                    <outputFormat>binary</outputFormat>
+                    <validateTranslations>true</validateTranslations>
+                    <preserveExisting>true</preserveExisting>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>extract</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

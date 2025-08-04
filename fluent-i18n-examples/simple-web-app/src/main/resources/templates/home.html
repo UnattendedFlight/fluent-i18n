@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${@i18nTemplateUtils.translate('Home Page')}">Home Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .language-switcher { padding: 1em 2em; background: #f0f8ff; border-radius: 8px; margin-bottom: 2em}
+        .language-switcher a { margin: 0 5px; text-decoration: none; color: #095080; }
+        .language-switcher a:hover { color: #2086c7; }
+        .content { max-width: 800px; margin: 0 auto; }
+        .welcome { background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .stats { background: #f9f9f9; padding: 15px; border-left: 4px solid #007acc; }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <div class="language-switcher">
+            <strong th:text="${@i18nTemplateUtils.translate('Language')}">Language:</strong>
+            <a href="?lang=en">English</a>
+            <a href="?lang=nb">Norsk</a>
+            <a href="?lang=sv">Svenska</a>
+            <a href="?lang=da">Dansk</a>
+            <a href="?lang=fi">Suomi</a>
+            <a href="?lang=fr">Français</a>
+            <a href="?lang=de">Deutsch</a>
+            <a href="?lang=es">Español</a>
+            <a href="?lang=it">Italiano</a>
+            <a href="?lang=pt">Português</a>
+            <a href="?lang=nl">Nederlands</a>
+            <a href="?lang=pl">Polski</a>
+            <a href="?lang=ru">Русский</a>
+            <a href="?lang=zh">中文</a>
+            <a href="?lang=ja">日本語</a>
+            <a href="?lang=ko">한국어</a>
+        </div>
+        <h1 th:text="${@i18nTemplateUtils.translate('Natural Text Internationalization Demo')}">
+            Natural Text Internationalization Demo
+        </h1>
+        
+        <div class="welcome">
+            <h2 th:text="${welcomeMessage}">Welcome message</h2>
+            <p th:text="${description}">Description</p>
+        </div>
+        
+        <div class="stats">
+            <h3 th:text="${@i18nTemplateUtils.translate('Application Statistics')}">Statistics</h3>
+            <p th:text="${userCountMessage}">User count</p>
+        </div>
+        
+        <div class="navigation">
+            <h3 th:text="${@i18nTemplateUtils.translate('Navigation')}">Navigation</h3>
+            <ul>
+                <li>
+                    <a href="/user/1" th:text="${@i18nTemplateUtils.translate('View User Profile')}">
+                        View User Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="/orders" th:text="${@i18nTemplateUtils.translate('Order Management')}">
+                        Order Management
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="features">
+            <h3 th:text="${@i18nTemplateUtils.translate('Key Features')}">Key Features</h3>
+            <ul>
+                <li th:text="${@i18nTemplateUtils.translate('Write code using natural language text')}">
+                    Natural language text
+                </li>
+                <li th:text="${@i18nTemplateUtils.translate('Automatic message extraction from source code')}">
+                    Automatic extraction
+                </li>
+                <li th:text="${@i18nTemplateUtils.translate('Standard PO file workflow for translators')}">
+                    PO file workflow
+                </li>
+                <li th:text="${@i18nTemplateUtils.translate('Hash-based keys invisible to developers')}">
+                    Hash-based keys
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

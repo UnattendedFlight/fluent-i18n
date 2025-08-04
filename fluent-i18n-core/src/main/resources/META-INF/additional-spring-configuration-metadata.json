@@ -1,0 +1,39 @@
+{
+  "properties": [
+    {
+      "name": "fluent.i18n.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable Fluent i18n auto-configuration.",
+      "defaultValue": true
+    },
+    {
+      "name": "fluent.i18n.default-locale",
+      "type": "java.util.Locale",
+      "description": "Default locale for internationalization.",
+      "defaultValue": "en"
+    },
+    {
+      "name": "fluent.i18n.supported-locales",
+      "type": "java.util.Set<java.util.Locale>",
+      "description": "Set of supported locales."
+    },
+    {
+      "name": "fluent.i18n.message-source.type",
+      "type": "java.lang.String",
+      "description": "Type of message source: json, properties, binary.",
+      "defaultValue": "json"
+    },
+    {
+      "name": "fluent.i18n.message-source.basename",
+      "type": "java.lang.String",
+      "description": "Base name for message files.",
+      "defaultValue": "i18n/messages"
+    },
+    {
+      "name": "fluent.i18n.web.locale-parameter",
+      "type": "java.lang.String",
+      "description": "Parameter name for locale switching.",
+      "defaultValue": "lang"
+    }
+  ]
+}

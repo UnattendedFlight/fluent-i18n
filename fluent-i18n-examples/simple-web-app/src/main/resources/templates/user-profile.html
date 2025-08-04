@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${@i18nTemplateUtils.translate('User Profile')}">User Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .language-switcher { padding: 1em 2em; background: #f0f8ff; border-radius: 8px; margin-bottom: 2em}
+        .language-switcher a { margin: 0 5px; text-decoration: none; color: #095080; }
+        .language-switcher a:hover { color: #2086c7; }
+        .content { max-width: 800px; margin: 0 auto; }
+        .profile-card { background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .profile-info { background: #f9f9f9; padding: 15px; border-left: 4px solid #007acc; }
+        .back-link { margin-top: 20px; }
+        .back-link a { color: #007acc; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="language-switcher">
+            <strong th:text="${@i18nTemplateUtils.translate('Language')}">Language:</strong>
+            <a href="?lang=en">English</a>
+            <a href="?lang=nb">Norsk</a>
+            <a href="?lang=sv">Svenska</a>
+            <a href="?lang=da">Dansk</a>
+            <a href="?lang=fi">Suomi</a>
+            <a href="?lang=fr">Français</a>
+            <a href="?lang=de">Deutsch</a>
+            <a href="?lang=es">Español</a>
+            <a href="?lang=it">Italiano</a>
+            <a href="?lang=pt">Português</a>
+            <a href="?lang=nl">Nederlands</a>
+            <a href="?lang=pl">Polski</a>
+            <a href="?lang=ru">Русский</a>
+            <a href="?lang=zh">中文</a>
+            <a href="?lang=ja">日本語</a>
+            <a href="?lang=ko">한국어</a>
+        </div>
+        <h1 th:text="${@i18nTemplateUtils.translate('User Profile')}">User Profile</h1>
+        
+        <div class="profile-card">
+            <h2 th:text="${@i18nTemplateUtils.translate('Profile Information')}">Profile Information</h2>
+            <div class="profile-info">
+                <p><strong th:text="${@i18nTemplateUtils.translate('User ID')}">User ID:</strong> <span th:text="${user.id}">1</span></p>
+                <p><strong th:text="${@i18nTemplateUtils.translate('Name')}">Name:</strong> <span th:text="${user.name}">John Doe</span></p>
+                <p><strong th:text="${@i18nTemplateUtils.translate('Email')}">Email:</strong> <span th:text="${user.email}">john.doe@example.com</span></p>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="/" th:text="${@i18nTemplateUtils.translate('Back to Home')}">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html> 
