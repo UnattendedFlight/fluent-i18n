@@ -30,6 +30,9 @@ jobs:
     - name: Run integration tests
       run: mvn -B verify
 
+    - name: Build deployable modules
+      run: mvn -B clean package -P deploy
+
     - name: Build examples
       run: mvn -B clean package -pl fluent-i18n-examples -am
 

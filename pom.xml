@@ -65,6 +65,17 @@
         <module>fluent-i18n-examples</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <modules>
+                <module>fluent-i18n-core</module>
+                <module>fluent-i18n-spring-boot-starter</module>
+                <module>fluent-i18n-maven-plugin</module>
+            </modules>
+        </profile>
+    </profiles>
+
     <dependencyManagement>
         <dependencies>
             <!-- Spring Boot BOM -->

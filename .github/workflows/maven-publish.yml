@@ -29,13 +29,13 @@ jobs:
         cache: 'maven'
 
     - name: Build with Maven
-      run: mvn -B clean package
+      run: mvn -B clean package -P deploy
 
     - name: Run tests
-      run: mvn -B test
+      run: mvn -B test -P deploy
 
     - name: Publish to GitHub Packages
-      run: mvn -B deploy -s settings.xml
+      run: mvn -B deploy -P deploy -s settings.xml
       env:
         GITHUB_TOKEN: ${{ github.token }}
         GITHUB_ACTOR: ${{ github.actor }}

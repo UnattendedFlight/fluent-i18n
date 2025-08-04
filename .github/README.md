@@ -28,7 +28,7 @@ This directory contains GitHub Actions workflows for the Fluent i18n project.
 **Triggers**: Release creation, Tag push (v*)
 **Purpose**: Publish artifacts to GitHub Packages
 
-- Builds the project
+- Builds deployable modules (excludes examples)
 - Runs tests
 - Publishes to GitHub Packages
 - Requires proper authentication via `settings.xml`
@@ -51,7 +51,7 @@ Maven settings file for GitHub Packages authentication. Contains:
 1. **Create a Release**: Go to GitHub Releases and create a new release
 2. **Tag the Release**: Use semantic versioning (e.g., v1.0.0)
 3. **Workflow Triggers**: The maven-publish workflow will automatically run
-4. **Artifacts Published**: All modules will be published to GitHub Packages
+4. **Artifacts Published**: Core modules (fluent-i18n-core, fluent-i18n-spring-boot-starter, fluent-i18n-maven-plugin) will be published to GitHub Packages
 
 ## Manual Testing
 
