@@ -40,4 +40,10 @@ hs_err_pid*
 
 # Generated files
 *.mo
-*.po~ 
+*.po~
+
+DEPLOYMENT.md
+bundle/
+create-manual-bundle.ps1
+*.zip
+*.asc

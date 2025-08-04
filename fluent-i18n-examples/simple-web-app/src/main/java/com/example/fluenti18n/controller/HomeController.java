@@ -33,10 +33,11 @@ public class HomeController {
     public String home(Model model) {
         // Natural text - will be extracted and translated
         model.addAttribute("welcomeMessage",
-            predefinedWelcomeMessage.resolve());
+            I18n.resolveKey(predefinedWelcomeMessage.getHash()));
         
-        model.addAttribute("description", 
-            I18n.translate(alternatePredefinedMessage));
+        model.addAttribute("description",
+            I18n.variable(alternatePredefinedMessage).resolve());
+//            I18n.translate(alternatePredefinedMessage));
         
         // Pluralization example
         int userCount = userService.getUserCount();

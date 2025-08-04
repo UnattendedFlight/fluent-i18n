@@ -4,10 +4,24 @@ import java.text.MessageFormat;
 import java.util.Locale;
 
 /**
- * Utility for formatting messages with parameters
+ * Utility class for formatting messages using templates and arguments.
+ * Supports both locale-aware formatting through MessageFormat and
+ * basic string replacement as a fallback.
  */
 public class MessageFormatter {
     
+    /**
+     * Formats a template string using the specified arguments and a given locale.
+     * If the template or arguments are invalid, basic string replacement is used
+     * as a fallback mechanism. This method leverages {@link MessageFormat} for
+     * locale-aware formatting.
+     *
+     * @param template the template string containing placeholders, such as {0}, {1}, etc.
+     * @param args an array of objects to be used as arguments to replace placeholders in the template
+     * @param locale the {@link Locale} to apply during formatting
+     * @return the formatted string with placeholders replaced by the provided arguments,
+     *         or the original template if no arguments are provided
+     */
     public static String format(String template, Object[] args, Locale locale) {
         if (template == null) return null;
         if (args == null || args.length == 0) return template;
@@ -22,6 +36,14 @@ public class MessageFormatter {
         }
     }
     
+    /**
+     * Formats a string template by replacing placeholders with specified arguments.
+     * Supports both indexed placeholders (e.g., {0}, {1}) and unindexed placeholders (e.g., {}).
+     *
+     * @param template the string template containing placeholders
+     * @param args an array of arguments to replace the placeholders in the template
+     * @return the formatted string with placeholders replaced by corresponding arguments
+     */
     private static String simpleFormat(String template, Object[] args) {
         String result = template;
         for (int i = 0; i < args.length; i++) {

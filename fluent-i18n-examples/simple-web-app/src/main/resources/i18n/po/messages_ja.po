@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Fluent i18n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-04T13:48:27.7393165\n"
-"PO-Revision-Date: 2025-08-04T13:48:27.7393165\n"
+"POT-Creation-Date: 2025-08-04T18:15:47.9461972\n"
+"PO-Revision-Date: 2025-08-04T18:15:47.9461972\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -39,7 +39,7 @@ msgstr "このアプリケーションは、自然テキストの国際化を実
 msgid "Looking up user with ID: {}"
 msgstr "IDを持つユーザーを探しています：{}"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:59
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:60
 #. hash: SheT6ZAM0xK
 msgid "User not found"
 msgstr "ユーザーが見つかりませんでした"
@@ -162,7 +162,7 @@ msgstr "顧客"
 msgid "Processing Orders"
 msgstr "注文処理"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:83
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:84
 #: src\main\resources\templates\home.html:62
 #: src\main\resources\templates\orders.html:6
 #: src\main\resources\templates\orders.html:50
@@ -180,7 +180,7 @@ msgstr "アプリケーション統計"
 msgid "Order Overview"
 msgstr "オーダー概要"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:44
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:45
 #. hash: ZnpDbw71ov4
 #. context: plural:zero=No users registered yet,other={} users are using our app,one=One user is using our app
 msgid "{0, plural, zero {No users registered yet} one {One user is using our app} other {{} users are using our app}}"
@@ -211,7 +211,7 @@ msgstr "ユーザープロフィールを表示"
 msgid "Pending Orders"
 msgstr "保留中の注文"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:65
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:66
 #. hash: PI9cX1qs926
 msgid "User Profile for {}"
 msgstr "0]のユーザープロフィール"

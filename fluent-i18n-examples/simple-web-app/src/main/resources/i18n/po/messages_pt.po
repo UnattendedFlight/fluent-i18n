@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Fluent i18n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-04T13:48:27.7290274\n"
-"PO-Revision-Date: 2025-08-04T13:48:27.7290274\n"
+"POT-Creation-Date: 2025-08-04T18:15:47.9353898\n"
+"PO-Revision-Date: 2025-08-04T18:15:47.9353898\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pt\n"
@@ -39,7 +39,7 @@ msgstr "Este aplicativo demonstra a internacionalização de texto natural"
 msgid "Looking up user with ID: {}"
 msgstr "Procurando usuário com ID: {}"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:59
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:60
 #. hash: SheT6ZAM0xK
 msgid "User not found"
 msgstr "Usuário não encontrado"
@@ -162,7 +162,7 @@ msgstr "Cliente"
 msgid "Processing Orders"
 msgstr "Processamento de pedidos"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:83
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:84
 #: src\main\resources\templates\home.html:62
 #: src\main\resources\templates\orders.html:6
 #: src\main\resources\templates\orders.html:50
@@ -180,7 +180,7 @@ msgstr "Estatísticas de aplicativos"
 msgid "Order Overview"
 msgstr "Visão Geral do Pedido"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:44
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:45
 #. hash: ZnpDbw71ov4
 #. context: plural:zero=No users registered yet,other={} users are using our app,one=One user is using our app
 msgid "{0, plural, zero {No users registered yet} one {One user is using our app} other {{} users are using our app}}"
@@ -211,7 +211,7 @@ msgstr "Ver perfil do cliente"
 msgid "Pending Orders"
 msgstr "Pedidos Pendentes"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:65
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:66
 #. hash: PI9cX1qs926
 msgid "User Profile for {}"
 msgstr "Perfil do usuário para {}"

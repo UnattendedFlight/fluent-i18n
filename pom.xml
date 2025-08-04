@@ -6,33 +6,35 @@
 
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.3</version>
     <packaging>pom</packaging>
 
     <name>Fluent i18n</name>
     <description>Natural language internationalization library with Maven plugin support</description>
-    <url>https://github.com/springframework/fluent-i18n</url>
+    <url>https://github.com/unattendedflight/fluent-i18n</url>
 
     <licenses>
         <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 
     <developers>
         <developer>
-            <name>Spring Team</name>
-            <email>spring-team@pivotal.io</email>
-            <organization>Pivotal Software, Inc.</organization>
-            <organizationUrl>https://pivotal.io</organizationUrl>
+            <name>UnattendedFlight</name>
+            <email>unattendedflight@github.com</email>
+            <organization>UnattendedFlight</organization>
+            <organizationUrl>https://github.com/unattendedflight</organizationUrl>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/springframework/fluent-i18n.git</connection>
-        <developerConnection>scm:git:ssh://github.com:springframework/fluent-i18n.git</developerConnection>
-        <url>https://github.com/springframework/fluent-i18n/tree/main</url>
+        <connection>scm:git:git://github.com/unattendedflight/fluent-i18n.git</connection>
+        <developerConnection>scm:git:ssh://github.com:unattendedflight/fluent-i18n.git</developerConnection>
+        <url>https://github.com/unattendedflight/fluent-i18n/tree/main</url>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
@@ -129,16 +131,16 @@
     </dependencyManagement>
 
     <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/${env.GITHUB_REPOSITORY}</url>
-        </repository>
         <snapshotRepository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/${env.GITHUB_REPOSITORY}</url>
+            <id>ossrh</id>
+            <name>OSS Sonatype Snapshots</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <name>OSS Sonatype Staging</name>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 
     <build>
@@ -193,6 +195,35 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <keyname>E6FE5EE76E882AD447F6D690DDDBA52E8CEA83D5</keyname>
+                        <passphraseServerId>gpg-passphrase</passphraseServerId>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.13</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

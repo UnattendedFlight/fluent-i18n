@@ -71,7 +71,7 @@ We welcome code contributions! Here's how to get started:
 
 ### Prerequisites
 
-- Java 11 or higher
+- Java 17 or higher
 - Maven 3.6 or higher
 - Git
 
@@ -83,7 +83,7 @@ git clone https://github.com/your-username/fluent-i18n.git
 cd fluent-i18n
 
 # Add upstream remote
-git remote add upstream https://github.com/original-owner/fluent-i18n.git
+git remote add upstream https://github.com/UnattendedFlight/fluent-i18n.git
 
 # Build the project
 mvn clean install
@@ -97,18 +97,18 @@ mvn test
 **IntelliJ IDEA:**
 1. Open the project
 2. Import Maven project
-3. Configure Java 11+ SDK
+3. Configure Java 17+ SDK
 4. Enable annotation processing
 
 **Eclipse:**
 1. Import as Maven project
-2. Configure Java 11+ JRE
+2. Configure Java 17+ JRE
 3. Enable annotation processing
 
 **VS Code:**
 1. Install Java Extension Pack
 2. Open the project folder
-3. Configure Java 11+ runtime
+3. Configure Java 17+ runtime
 
 ### Running Examples
 
@@ -360,7 +360,7 @@ public class TestData {
  * }</pre>
  * 
  * @author Your Name
- * @since 1.0.0
+ * @since 0.1.3
  * @see ExtractionConfig
  * @see ExtractionResult
  */
@@ -383,13 +383,12 @@ public class MessageExtractor {
 }
 ```
 
-### README Updates
+### Documentation Updates
 
 When adding new features, update relevant documentation:
 
 - **README.md**: Update feature list and examples
-- **USER_GUIDE.md**: Add usage examples and configuration
-- **DEVELOPER_GUIDE.md**: Document architecture changes
+- **CONFIGURATION.md**: Add configuration options and examples
 - **CHANGELOG.md**: Document changes for the next release
 
 ### Code Comments
@@ -449,7 +448,7 @@ Before releasing:
 mvn clean install
 
 # 4. Create release tag
-git tag v1.0.0
+git tag v0.1.4
 git push origin --tags
 
 # 5. Create GitHub release
@@ -467,8 +466,8 @@ mvn deploy -P release
 
 ### Resources
 
-- [User Guide](USER_GUIDE.md): Comprehensive usage guide
-- [Developer Guide](DEVELOPER_GUIDE.md): Architecture and development details
+- [README.md](README.md): Quick start and overview
+- [Configuration Guide](CONFIGURATION.md): Detailed configuration options
 - [Examples](fluent-i18n-examples/): Working example applications
 - [API Documentation](https://javadoc.io/doc/io.github.unattendedflight.fluent/fluent-i18n-core): Generated JavaDoc
 
