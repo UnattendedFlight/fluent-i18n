@@ -2,10 +2,11 @@ package io.github.unattendedflight.fluent.i18n.springboot.fluenti18n;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import io.github.unattendedflight.fluent.i18n.I18n;
+import io.github.unattendedflight.fluent.i18n.config.FluentConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
-import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
@@ -13,37 +14,32 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import java.util.Locale;
 
 /**
- * FluentI18nWebInterceptor is an implementation of the HandlerInterceptor interface
- * used to manage locale resolution in a web application. It determines the user's
- * locale based on multiple factors such as URL parameters, session attributes,
- * Accept-Language headers, and default locale configuration.
- *
- * This interceptor ensures that the determined locale is set and properly handled
- * for each web request, and cleans up the thread-local context after request
- * processing is complete.
+ * FluentI18nWebInterceptor is a simple interceptor that ensures fluent-i18n's current locale
+ * is synchronized with Spring's locale resolution and cleans up thread-local storage after request completion.
+ * 
+ * This interceptor works together with Spring's LocaleChangeInterceptor and our FluentLocaleResolver
+ * to provide comprehensive locale support for web applications.
  */
 public class FluentI18nWebInterceptor implements HandlerInterceptor {
     
-    /**
-     * Holds the configuration properties for FluentI18n within the interceptor.
-     * Acts as a centralized access point to internationalization configurations
-     * utilized for locale determination and request handling.
-     */
-    private final FluentI18nProperties properties;
+    private static final Logger logger = LoggerFactory.getLogger(FluentI18nWebInterceptor.class);
+    
+    private final FluentConfig config;
     
     /**
-     * Constructs a new instance of FluentI18nWebInterceptor with the specified FluentI18nProperties.
+     * Constructs a new instance of FluentI18nWebInterceptor with the specified FluentConfig.
      *
-     * @param properties the FluentI18nProperties instance containing the configuration for the interceptor
+     * @param config the FluentConfig instance containing the configuration for the interceptor
      */
-    public FluentI18nWebInterceptor(FluentI18nProperties properties) {
-        this.properties = properties;
+    public FluentI18nWebInterceptor(FluentConfig config) {
+        this.config = config;
     }
     
     /**
-     * Intercepts the incoming HTTP request to determine and set the current locale for the application.
-     * This method checks various sources such as request parameters, session attributes, and headers
-     * to resolve the locale and applies it globally for the current request lifecycle.
+     * Resolves and sets the locale for fluent-i18n using the proper resolution order:
+     * 1. Query parameter (?locale=en)
+     * 2. Session (set from previous query parameter) 
+     * 3. Accept-Language header as final fallback
      *
      * @param request  the incoming HttpServletRequest object
      * @param response the outgoing HttpServletResponse object
@@ -52,18 +48,99 @@ public class FluentI18nWebInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        Locale locale = determineLocale(request);
+        Locale locale = resolveLocale(request);
         if (locale != null) {
             I18n.setCurrentLocale(locale);
+            logger.trace("Set fluent-i18n locale to: {}", locale);
         }
+        
         return true;
     }
     
     /**
-     * Callback method to be executed after the request is completed.
-     * This method is typically used for cleanup purposes. In this implementation,
-     * it clears the thread-local storage for the current locale to prevent
-     * memory leaks or incorrect locale references in subsequent requests.
+     * Resolves the locale in the proper order:
+     * 1. Query parameter (?locale=en) - highest priority
+     * 2. Session storage (from previous query parameter)
+     * 3. Accept-Language header - lowest priority fallback
+     */
+    private Locale resolveLocale(HttpServletRequest request) {
+        // 1. Check for locale query parameter first (highest priority)
+        String localeParam = request.getParameter("lang");
+        if (localeParam != null && !localeParam.trim().isEmpty()) {
+            try {
+                Locale locale = parseLocale(localeParam);
+                if (locale != null && isSupportedLocale(locale)) {
+                    // Store in session for future requests
+                    request.getSession(true).setAttribute("fluent-i18n-locale", locale);
+                    logger.debug("Found locale parameter '{}': {}, stored in session", localeParam, locale);
+                    return locale;
+                }
+            } catch (Exception e) {
+                logger.warn("Invalid locale parameter '{}': {}", localeParam, e.getMessage());
+            }
+        }
+        
+        // 2. Check session for stored locale (medium priority)
+        try {
+            Object sessionLocale = request.getSession(false) != null ? 
+                request.getSession(false).getAttribute("fluent-i18n-locale") : null;
+            if (sessionLocale instanceof Locale) {
+                Locale locale = (Locale) sessionLocale;
+                if (isSupportedLocale(locale)) {
+                    logger.debug("Found locale in session: {}", locale);
+                    return locale;
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("Error reading locale from session: {}", e.getMessage());
+        }
+        
+        // 3. Fall back to Accept-Language header (lowest priority)
+        Locale headerLocale = request.getLocale();
+        if (headerLocale != null && isSupportedLocale(headerLocale)) {
+            logger.debug("Using Accept-Language header locale: {}", headerLocale);
+            return headerLocale;
+        }
+        
+        // 4. Final fallback to default locale
+        Locale defaultLocale = config.getDefaultLocale();
+        logger.debug("Using default locale: {}", defaultLocale);
+        return defaultLocale;
+    }
+    
+    /**
+     * Parses a locale string into a Locale object.
+     */
+    private Locale parseLocale(String localeString) {
+        if (localeString == null || localeString.trim().isEmpty()) {
+            return null;
+        }
+        
+        // Handle common formats: "en", "en_US", "en-US"
+        String normalized = localeString.trim().replace('_', '-');
+        return Locale.forLanguageTag(normalized);
+    }
+    
+    /**
+     * Checks if the locale is supported based on the configuration.
+     */
+    private boolean isSupportedLocale(Locale locale) {
+        if (locale == null) {
+            return false;
+        }
+        
+        // Check exact match first
+        if (config.getSupportedLocales().contains(locale)) {
+            return true;
+        }
+        
+        // Check if language matches any supported locale
+        return config.getSupportedLocales().stream()
+            .anyMatch(supported -> supported.getLanguage().equals(locale.getLanguage()));
+    }
+    
+    /**
+     * Clears the thread-local locale storage to prevent memory leaks and ensure clean state for subsequent requests.
      *
      * @param request the HttpServletRequest object that contains the request made by the client
      * @param response the HttpServletResponse object that contains the response sent to the client
@@ -73,116 +150,8 @@ public class FluentI18nWebInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, @Nullable Exception ex) {
-        // Clear locale from thread local after request
+        // Clear locale from thread local after request to prevent memory leaks
         I18n.clearCurrentLocale();
-    }
-    
-    /**
-     * Determines the appropriate locale for the current request.
-     *
-     * The method checks multiple sources in the following order for resolving the locale:
-     * 1. Locale specified as a URL parameter.
-     * 2. Locale stored in the user's session.
-     * 3. Locale specified in the `Accept-Language` header of the HTTP request.
-     * 4. Application's configured default locale, used as a fallback if no other sources provide a valid locale.
-     *
-     * If supported, the resolved locale is stored in the user's session for future requests.
-     *
-     * @param request the current {@link HttpServletRequest} object, which provides information regarding the user's request
-     * @return the resolved {@link Locale}, taking into consideration user-specified preferences and application configuration
-     */
-    private Locale determineLocale(HttpServletRequest request) {
-        // 1. Check URL parameter
-        String localeParam = request.getParameter(properties.getWeb().getLocaleParameter());
-        if (StringUtils.hasText(localeParam)) {
-            Locale locale = parseLocale(localeParam);
-            if (locale != null && isSupportedLocale(locale)) {
-                // Store in session for future requests
-                HttpSession session = request.getSession(true);
-                session.setAttribute("locale", locale);
-                return locale;
-            }
-        }
-        
-        // 2. Check session
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            Locale sessionLocale = (Locale) session.getAttribute("locale");
-            if (sessionLocale != null && isSupportedLocale(sessionLocale)) {
-                return sessionLocale;
-            }
-        }
-        
-        // 3. Check Accept-Language header
-        if (properties.getWeb().isUseAcceptLanguageHeader()) {
-            Locale headerLocale = resolveFromAcceptLanguage(request);
-            if (headerLocale != null && isSupportedLocale(headerLocale)) {
-                return headerLocale;
-            }
-        }
-        
-        // 4. Use default locale
-        return properties.getDefaultLocale();
-    }
-    
-    /**
-     * Parses a locale string into a {@link Locale} object.
-     *
-     * @param localeString the locale string to be parsed, expected in a format that can be recognized
-     *                     by {@link Locale#forLanguageTag(String)} after replacing underscores with hyphens
-     * @return the corresponding {@link Locale} object if parsing is successful, or null if an exception occurs
-     */
-    private Locale parseLocale(String localeString) {
-        try {
-            return Locale.forLanguageTag(localeString.replace("_", "-"));
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    
-    /**
-     * Determines if the provided locale is supported by checking against the set of supported locales.
-     * A locale is considered supported if it is either present in the supported locales set or
-     * if its language matches the language of any locale in the supported set.
-     *
-     * @param locale the locale to check for support
-     * @return true if the locale or its language is supported, otherwise false
-     */
-    private boolean isSupportedLocale(Locale locale) {
-        return properties.getSupportedLocales().contains(locale) ||
-               properties.getSupportedLocales().stream()
-                   .anyMatch(supported -> supported.getLanguage().equals(locale.getLanguage()));
-    }
-    
-    /**
-     * Resolves a {@link Locale} from the "Accept-Language" header present in the provided HTTP request.
-     * This method first attempts to use the {@link LocaleResolver} if available in the request context.
-     * If no resolver is available or an error occurs, it falls back to parsing the "Accept-Language" header manually.
-     *
-     * @param request the {@link HttpServletRequest} containing the "Accept-Language" header and other request-related information
-     * @return the resolved {@link Locale}, or null if no valid locale can be determined
-     */
-    private Locale resolveFromAcceptLanguage(HttpServletRequest request) {
-        try {
-            LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-            if (localeResolver != null) {
-                return localeResolver.resolveLocale(request);
-            }
-        } catch (Exception e) {
-            // Fallback to simple header parsing
-        }
-        
-        String acceptLanguage = request.getHeader("Accept-Language");
-        if (StringUtils.hasText(acceptLanguage)) {
-            String[] languages = acceptLanguage.split(",");
-            for (String lang : languages) {
-                String langCode = lang.trim().split(";")[0].trim();
-                Locale locale = parseLocale(langCode.replace("-", "_"));
-                if (locale != null) {
-                    return locale;
-                }
-            }
-        }
-        return null;
+        logger.trace("Cleared fluent-i18n thread-local locale");
     }
 }

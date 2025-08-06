@@ -65,6 +65,7 @@ public class JavaMethodCallExtractor implements SourceExtractor {
     @Override
     public List<ExtractedMessage> extract(String content, String filePath) {
         List<ExtractedMessage> messages = new ArrayList<>();
+
         
         // First, check for plural forms and extract them
         List<ExtractedMessage> pluralMessages = extractPluralForms(content, filePath);
@@ -89,30 +90,187 @@ public class JavaMethodCallExtractor implements SourceExtractor {
                     continue;
                 }
                 
-                String naturalText = matcher.group(1);
-                if (naturalText != null && !naturalText.trim().isEmpty()) {
-                    ExtractedMessage message = new ExtractedMessage(naturalText);
+                // Enhanced parsing with string concatenation support
+                if (matcher.groupCount() >= 3 && matcher.group(3) != null) {
+                    // Pattern: I18n.context("key").description("desc").translate("text")
+                    String contextKey = parseStringValue(matcher.group(1));
+                    String contextDescription = parseStringValue(matcher.group(2));
+                    String naturalText = parseStringValue(matcher.group(3));
                     
-                    message.addLocation(new SourceLocation(filePath, lineNumber));
+
                     
-                    // Check if this is a contextual call
-                    if (matcher.group().contains("context(")) {
+                    if (naturalText != null && !naturalText.trim().isEmpty()) {
+                        ExtractedMessage message = new ExtractedMessage(naturalText);
+                        message.addLocation(new SourceLocation(filePath, lineNumber));
                         message.setType(MessageType.CONTEXTUAL);
-                        // Extract context if available
-                        String contextPattern = "I18n\\.context\\(\"([^\"]+)\"\\)";
-                        Pattern ctx = Pattern.compile(contextPattern);
-                        Matcher ctxMatcher = ctx.matcher(matcher.group());
-                        if (ctxMatcher.find()) {
-                            message.setContext(ctxMatcher.group(1));
-                        }
+                        message.setContextKey(contextKey);
+                        message.setContext(contextDescription);
+                        messages.add(message);
+                    }
+                } else if (matcher.groupCount() >= 2 && matcher.group(2) != null) {
+                    // Pattern: I18n.context("key").translate("text") - use key as both key and description
+                    String contextKey = parseStringValue(matcher.group(1));
+                    String naturalText = parseStringValue(matcher.group(2));
+                    
+
+                    
+                    if (naturalText != null && !naturalText.trim().isEmpty()) {
+                        ExtractedMessage message = new ExtractedMessage(naturalText);
+                        message.addLocation(new SourceLocation(filePath, lineNumber));
+                        message.setType(MessageType.CONTEXTUAL);
+                        message.setContextKey(contextKey);
+                        message.setContext(contextKey); // Use key as fallback description
+                        messages.add(message);
+                    }
+                } else {
+                    // Regular pattern: I18n.translate("text")
+                    String rawValue = matcher.group(1);
+                    String naturalText = parseStringValue(rawValue);
+                    
+                    // Debug output to understand the parsing
+                    if (rawValue != null && rawValue.contains("Looking up user")) {
+                        System.out.println("DEBUG: Raw value: '" + rawValue + "'");
+                        System.out.println("DEBUG: Parsed value: '" + naturalText + "'");
                     }
                     
-                    messages.add(message);
+                    if (naturalText != null && !naturalText.trim().isEmpty()) {
+                        ExtractedMessage message = new ExtractedMessage(naturalText);
+                        message.addLocation(new SourceLocation(filePath, lineNumber));
+                        messages.add(message);
+                    }
                 }
             }
         }
         
         return messages;
+    }
+    
+    /**
+     * Parses a string value that may include concatenation (e.g., "part1" + "part2").
+     * This method handles simple string concatenation patterns commonly found in Java code
+     * and extracts only the string literal portion, ignoring method arguments.
+     *
+     * @param rawValue the raw string value captured by regex, potentially with concatenation and arguments
+     * @return the parsed and concatenated string value (only the string literal part)
+     */
+    private String parseStringValue(String rawValue) {
+        if (rawValue == null) {
+            return null;
+        }
+        
+        rawValue = rawValue.trim();
+        
+        // First, extract only the string literal part before any arguments
+        String stringLiteralPart = extractStringLiteralFromExpression(rawValue);
+        
+        // Handle simple string concatenation: "part1" + "part2" + "part3"
+        if (stringLiteralPart.contains("+")) {
+            StringBuilder result = new StringBuilder();
+            
+            // Split by + and process each part
+            String[] parts = stringLiteralPart.split("\\+");
+            for (String part : parts) {
+                part = part.trim();
+                
+                // Remove quotes and extract string content
+                if (part.startsWith("\"") && part.endsWith("\"")) {
+                    part = part.substring(1, part.length() - 1);
+                    // Handle escaped quotes and other escape sequences
+                    part = unescapeJavaString(part);
+                    result.append(part);
+                } else {
+                    // If it's not a string literal, stop concatenation
+                    break;
+                }
+            }
+            
+            return result.toString();
+        }
+        
+        // Single string value - remove quotes if present
+        if (stringLiteralPart.startsWith("\"") && stringLiteralPart.endsWith("\"")) {
+            stringLiteralPart = stringLiteralPart.substring(1, stringLiteralPart.length() - 1);
+            return unescapeJavaString(stringLiteralPart);
+        }
+        
+        return stringLiteralPart;
+    }
+    
+    /**
+     * Extracts the string literal portion from a Java method call expression.
+     * For example, from '"message", arg1, arg2' it extracts '"message"'.
+     *
+     * @param expression the full expression inside method parentheses
+     * @return the string literal portion only
+     */
+    private String extractStringLiteralFromExpression(String expression) {
+        if (expression == null || expression.trim().isEmpty()) {
+            return expression;
+        }
+        
+        expression = expression.trim();
+        
+        // If the expression starts with a quote, find the end of the string literal
+        if (expression.startsWith("\"")) {
+            int endQuoteIndex = findClosingQuote(expression, 1);
+            if (endQuoteIndex != -1) {
+                String stringLiteral = expression.substring(0, endQuoteIndex + 1);
+                
+                // Check if there's string concatenation (+ operator) after this string
+                String remaining = expression.substring(endQuoteIndex + 1).trim();
+                if (remaining.startsWith("+")) {
+                    // Find the next string literal and include it in concatenation
+                    remaining = remaining.substring(1).trim();
+                    if (remaining.startsWith("\"")) {
+                        String nextPart = extractStringLiteralFromExpression(remaining);
+                        return stringLiteral + " + " + nextPart;
+                    }
+                }
+                
+                return stringLiteral;
+            }
+        }
+        
+        return expression;
+    }
+    
+    /**
+     * Finds the closing quote of a string literal, handling escaped quotes.
+     *
+     * @param str the string to search in
+     * @param startIndex the index to start searching from
+     * @return the index of the closing quote, or -1 if not found
+     */
+    private int findClosingQuote(String str, int startIndex) {
+        for (int i = startIndex; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c == '"') {
+                // Check if this quote is escaped
+                int backslashCount = 0;
+                for (int j = i - 1; j >= 0 && str.charAt(j) == '\\'; j--) {
+                    backslashCount++;
+                }
+                // If even number of backslashes (or zero), the quote is not escaped
+                if (backslashCount % 2 == 0) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * Unescapes a Java string literal by converting escape sequences to their actual characters.
+     *
+     * @param str the string to unescape
+     * @return the unescaped string
+     */
+    private String unescapeJavaString(String str) {
+        return str.replace("\\\"", "\"")
+                  .replace("\\\\", "\\")
+                  .replace("\\n", "\n")
+                  .replace("\\r", "\r")
+                  .replace("\\t", "\t");
     }
     
     /**

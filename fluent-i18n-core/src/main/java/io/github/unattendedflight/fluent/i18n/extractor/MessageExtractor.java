@@ -139,40 +139,22 @@ public class MessageExtractor {
             String content = Files.readString(file, config.getSourceEncoding());
             String relativePath = config.getProjectRoot().relativize(file).toString();
             
-            System.out.println("MessageExtractor: Processing file: " + relativePath);
-            
             for (SourceExtractor extractor : extractors) {
                 if (extractor.canProcess(file)) {
-                    System.out.println("MessageExtractor: Using extractor: " + extractor.getClass().getSimpleName() + " for " + relativePath);
                     List<ExtractedMessage> messages = extractor.extract(content, relativePath);
                     for (ExtractedMessage message : messages) {
-                        if (message.getType() == MessageType.PLURAL && message.getContext() != null && message.getContext().startsWith("plural:")) {
-                            // For plural messages, generate hash from the complete ICU MessageFormat string
-                            // The naturalText will be replaced with the ICU format in PoFileGenerator
-                            String hash = hashGenerator.generateHash(message.getNaturalText());
-                            message.setHash(hash);
-                            
-                            ExtractedMessage existing = discoveredMessages.get(hash);
-                            if (existing != null) {
-                                existing.addLocation(message.getLocations().getFirst());
-                            } else {
-                                discoveredMessages.put(hash, message);
-                            }
-                        } else {
-                            // Handle regular messages
-                            String hash = hashGenerator.generateHash(message.getNaturalText());
-                            message.setHash(hash);
-                            
-                            ExtractedMessage existing = discoveredMessages.get(hash);
-                            if (existing != null) {
-                                existing.addLocation(message.getLocations().getFirst());
-                            } else {
-                                discoveredMessages.put(hash, message);
-                            }
-                        }
+                      // Generate hash using contextKey for proper separation of contextual messages
+                      String hash = message.getContextKey() != null ? 
+                          hashGenerator.generateHash(message.getNaturalText(), message.getContextKey()) :
+                          hashGenerator.generateHash(message.getNaturalText());
+                      message.setHash(hash);
+                      ExtractedMessage existing = discoveredMessages.get(hash);
+                      if (existing != null) {
+                          existing.addLocation(message.getLocations().getFirst());
+                      } else {
+                          discoveredMessages.put(hash, message);
+                      }
                     }
-                } else {
-                    System.out.println("MessageExtractor: Skipping extractor: " + extractor.getClass().getSimpleName() + " for " + relativePath);
                 }
             }
         } catch (IOException e) {

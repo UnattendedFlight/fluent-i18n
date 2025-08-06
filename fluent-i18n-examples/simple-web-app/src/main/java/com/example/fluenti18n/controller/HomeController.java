@@ -37,8 +37,6 @@ public class HomeController {
         
         model.addAttribute("description",
             I18n.variable(alternatePredefinedMessage).resolve());
-//            I18n.translate(alternatePredefinedMessage));
-        
         // Pluralization example
         int userCount = userService.getUserCount();
         model.addAttribute("userCountMessage", 

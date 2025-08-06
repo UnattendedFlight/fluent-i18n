@@ -47,3 +47,6 @@ bundle/
 create-manual-bundle.ps1
 *.zip
 *.asc
+
+Dockerfile
+.dockerignore

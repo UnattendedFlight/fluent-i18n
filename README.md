@@ -9,6 +9,8 @@
 ## 🌟 Key Features
 
 - **Natural Language Development**: Write code using actual human-readable text
+- **Framework Agnostic**: Core library works with any Java framework (Spring Boot, JavaFX, Console apps, etc.)
+- **Flexible Configuration**: Support for `fluent.yml` configuration files or programmatic configuration
 - **Automatic Message Extraction**: Extract translatable messages from Java annotations and method calls
 - **Standard PO File Workflow**: Generate and manage translations using industry-standard PO files
 - **Hash-Based Keys**: Invisible hash-based keys instead of artificial keys, ensuring consistency across translations
@@ -22,28 +24,73 @@
 ### 1. Add Dependencies
 
 ```xml
-<!-- Core library -->
+<!-- Core library (framework agnostic) -->
 <dependency>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-core</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
 </dependency>
 
 <!-- Spring Boot Starter (optional) -->
 <dependency>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-spring-boot-starter</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
 </dependency>
 ```
 
-### 2. Configure Maven Plugin
+### 2. Configure fluent-i18n
+
+Create a `fluent.yml` file in your classpath (e.g., `src/main/resources/fluent.yml`):
+
+```yaml
+# Base path where translation files are located
+basePath: "i18n"
+
+# Supported locales for the application
+supportedLocales:
+  - "en"
+  - "fr"
+  - "de"
+  - "es"
+
+# Default locale to use when no specific locale is set
+defaultLocale: "en"
+
+# Character encoding for reading translation files
+encoding: "UTF-8"
+
+# Message source type (auto, binary, json, properties)
+# auto: automatically detect the best available format
+# binary: use binary format (most efficient)
+# json: use JSON format
+# properties: use properties format
+messageSourceType: "auto"
+
+# Caching configuration
+caching:
+  enabled: true
+  timeoutSeconds: 300
+
+# Auto-reload configuration (for development)
+autoReload:
+  enabled: false
+  intervalSeconds: 60
+
+# Whether to enable fallback to original text when translation is not found
+fallback: true
+
+# Whether to log missing translations (useful for development)
+logMissingTranslations: false
+```
+
+### 3. Configure Maven Plugin
 
 ```xml
 <plugin>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-maven-plugin</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
     <executions>
         <execution>
             <goals>
@@ -55,219 +102,213 @@
 </plugin>
 ```
 
-### 3. Write Natural Language Code
+### 4. Use in Your Code
+
+#### Framework-Agnostic Usage
 
 ```java
-@Controller
-public class HomeController {
-    
-    @GetMapping("/")
-    public String home(Model model) {
-        // Use natural language text directly
-        model.addAttribute("welcomeMessage", 
-            I18n.translate("Welcome to our amazing application!"));
-        model.addAttribute("welcomeSubtitle", 
-            I18n.t("We are pleased to see you here."));
-        
-        // Pluralization example
-        int userCount = userService.getUserCount();
-        model.addAttribute("userCountMessage", 
-            I18n.plural(userCount)
-                .zero("No users registered yet")
-                .one("One user is using our app")
-                .other("{} users are using our app")
-                .format());
-        
-        return "home";
-    }
-}
-```
+import io.github.unattendedflight.fluent.i18n.I18n;
 
-### 4. Configure Application
+// Initialize with configuration
+I18n.initialize();
 
-```yaml
-fluent:
-  i18n:
-    enabled: true
-    default-locale: en
-    supported-locales:
-      - en
-      - es
-      - fr
-      - de
-    
-    message-source:
-      type: json # or properties, binary
-      cache-duration: PT1H # 1 hour
-      basename: i18n/messages
-      use-original-as-fallback: true
-      log-missing-translations: true
-    
-    compilation:
-      output-format: json, binary
+// Or initialize with custom configuration
+FluentConfig config = new FluentConfig()
+    .supportedLocales("en", "fr", "de")
+    .defaultLocale("en")
+    .basePath("i18n");
+I18n.initialize(config);
 
-    warm-up:
-      enabled: true # Load specified locales into memory on launch
-      locales: # These will be loaded into memory at startup
-        - en
-        - es
+// Use natural language in your code
+String message = I18n.translate("Hello, welcome to our application!");
+String formatted = I18n.translate("Hello {0}, you have {1} new messages", "John", 5);
 
-    web: # Webmvc configuration, uses interceptors
-        enabled: true
-        locale-parameter: lang # URL parameter for locale
-        use-accept-language-header: true # Use Accept-Language header
-        use-session: true # Store locale in session
-```
-
-## 📖 How It Works
-
-### Traditional vs Fluent Approach
-
-```java
-// Traditional
-messageSource.getMessage("welcome.message", args, locale);
-
-// Fluent i18n
-I18n.translate("Welcome to our application!");
-```
-
-### Development Workflow
-
-1. **Development Phase**: Write your application using natural language text
-2. **Build-Time Extraction**: Maven plugin automatically extracts all translatable messages
-3. **Translation Workflow**: Translators work with standard PO files using tools like Poedit, Lokalise, or any text editor
-4. **Runtime Compilation**: Plugin compiles PO files to runtime formats (JSON, Properties, or Binary)
-
-### Example Workflow
-
-```java
-@Controller
-public class UserController {
-    @GetMapping("/users")
-    public String listUsers(Model model) {
-        model.addAttribute("title", I18n.translate("User Management"));
-        
-        int userCount = userService.getUserCount();
-        model.addAttribute("message", 
-            I18n.plural(userCount)
-                .zero("No users found")
-                .one("One user found")
-                .other("{} users found")
-                .format());
-        
-        return "users";
-    }
-}
-```
-
-Build generates `messages_en.po`:
-```po
-msgid "User Management"
-msgstr "User Management"
-
-msgid "{0, plural, zero {No users found} one {One user found} other {# users found}}"
-msgstr "{0, plural, zero {No users found} one {One user found} other {# users found}}"
-```
-
-## 🛠️ Advanced Usage
-
-### Basic API
-
-```java
-// Simple translation
-I18n.translate("Hello, world!");
-
-// With parameters
-I18n.translate("Hello, {}!", userName);
-
-// Short alias
-I18n.t("Welcome!");
-
-// Context-aware translations
-I18n.context("button").translate("Submit");
-
-// Pluralization
-I18n.plural(itemCount)
-    .zero("No items")
-    .one("One item")
-    .other("{} items")
+// Pluralization support
+String plural = I18n.plural(3)
+    .one("You have 1 message")
+    .other("You have {} messages")
     .format();
 ```
 
-### Annotations & Lazy Evaluation
+#### Spring Boot Integration
+
+With the Spring Boot starter, fluent-i18n is automatically configured:
 
 ```java
-// Static analysis with annotations
-@Translatable("Welcome to our application")
-public static final String WELCOME = "Welcome to our application";
-
-// Lazy evaluation
-MessageDescriptor message = I18n.describe("Welcome to our amazing application!");
-String translated = message.resolve(); // Uses current locale
+@RestController
+public class WelcomeController {
+    
+    @GetMapping("/welcome")
+    public String welcome(@RequestParam String name) {
+        // Use natural language - no translation keys needed!
+        return I18n.translate("Welcome {0} to our application!", name);
+    }
+}
 ```
 
-### Template Integration
+## 📁 Configuration Options
 
-```html
-<!-- Thymeleaf integration -->
-<h1 th:text="${@i18nTemplateUtils.translate('Welcome')}">Welcome</h1>
-<p th:text="${@i18nTemplateUtils.translate('Hello, {}!', userName)}">Hello message</p>
+### fluent.yml Configuration
+
+The `fluent.yml` file supports the following configuration options:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `basePath` | String | `"i18n"` | Base path for translation files |
+| `supportedLocales` | List<String> | `["en"]` | Supported locale codes |
+| `defaultLocale` | String | `"en"` | Default locale |
+| `encoding` | String | `"UTF-8"` | Character encoding |
+| `messageSourceType` | String | `"auto"` | Message source type (`auto`, `binary`, `json`, `properties`) |
+| `caching.enabled` | Boolean | `true` | Enable translation caching |
+| `caching.timeoutSeconds` | Long | `300` | Cache timeout in seconds |
+| `autoReload.enabled` | Boolean | `false` | Enable auto-reload |
+| `autoReload.intervalSeconds` | Long | `60` | Auto-reload interval |
+| `fallback` | Boolean | `true` | Enable fallback to original text |
+| `logMissingTranslations` | Boolean | `false` | Log missing translations |
+
+### Message Source Types
+
+Fluent i18n supports multiple message source types:
+
+- **`auto`** (default): Automatically detects the best available format (binary > JSON > properties)
+- **`binary`**: Uses binary format for maximum performance
+- **`json`**: Uses JSON format for easy debugging and editing
+- **`properties`**: Uses Java properties format for compatibility
+
+### Programmatic Configuration
+
+```java
+FluentConfig config = new FluentConfig()
+    .basePath("i18n")
+    .supportedLocales("en", "fr", "de", "es")
+    .defaultLocale("en")
+    .encoding(StandardCharsets.UTF_8)
+    .messageSourceType(FluentConfig.MessageSourceType.AUTO)
+    .enableCaching(true)
+    .cacheTimeoutSeconds(300)
+    .enableAutoReload(false)
+    .autoReloadIntervalSeconds(60)
+    .enableFallback(true)
+    .logMissingTranslations(false);
+
+I18n.initialize(config);
 ```
 
-## 📁 Project Structure
+### Spring Boot Configuration
 
-- **fluent-i18n-core**: Core functionality (compiler, extractor, Maven plugin)
-- **fluent-i18n-spring-boot-starter**: Spring Boot integration
-- **fluent-i18n-maven-plugin**: Maven plugin for PO extraction and compilation
-- **fluent-i18n-examples**: Example applications
+In Spring Boot applications, you can configure fluent-i18n using application properties:
 
-## 🔧 Configuration Options
+```yaml
+# application.yml
+fluent:
+  i18n:
+    enabled: true
+    config-location: "classpath:fluent.yml"
+    web:
+      enabled: true
+```
 
-For detailed configuration options, see the [Configuration Guide](CONFIGURATION.md).
+## 🔧 Framework Integration
+
+### Spring Boot
+
+The Spring Boot starter provides automatic configuration:
+
+1. **Auto-configuration**: Automatically configures fluent-i18n when Spring Boot is detected
+2. **Locale Resolution**: Integrates with Spring's locale resolution system
+3. **Web Interceptor**: Automatically sets up locale handling for web requests
+4. **Configuration Properties**: Supports configuration through `application.yml`
+
+### Other Frameworks
+
+For non-Spring frameworks (JavaFX, Console apps, etc.), use the core library directly:
+
+```java
+// Initialize with fluent.yml
+I18n.initialize();
+
+// Or initialize with custom configuration
+FluentConfig config = new FluentConfig()
+    .supportedLocales("en", "fr")
+    .defaultLocale("en");
+I18n.initialize(config);
+
+// Use in your application
+String message = I18n.translate("Hello, world!");
+```
+
+## 📝 Translation Workflow
+
+1. **Write Code**: Use natural language in your code
+2. **Extract Messages**: Run `mvn fluent-i18n:extract` to extract translatable messages
+3. **Translate**: Edit the generated PO files with translations
+4. **Compile**: Run `mvn fluent-i18n:compile` to compile translations
+5. **Deploy**: Translation files are automatically loaded by the library
+
+## 🎯 Advanced Features
+
+### Context-Aware Translations
+
+```java
+// Use context to disambiguate translations
+String message = I18n.context("email")
+    .translate("Subject");
+```
+
+### Pluralization
+
+```java
+// Handle pluralization automatically
+String message = I18n.plural(count)
+    .zero("No messages")
+    .one("1 message")
+    .other("{} messages")
+    .format();
+```
+
+### Message Descriptors
+
+```java
+// Create reusable message descriptors
+MessageDescriptor welcomeMsg = I18n.describe("Welcome {0}!", "name");
+String message = I18n.resolve(welcomeMsg, "John");
+```
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+1. **Translation files not found**: Check the `basePath` configuration
+2. **Missing translations**: Enable `logMissingTranslations` for debugging
+3. **Encoding issues**: Ensure `encoding` is set correctly in `fluent.yml`
+
+### Debug Configuration
+
+Enable debug logging to see what's happening:
+
+```yaml
+# fluent.yml
+logMissingTranslations: true
+```
+
+```yaml
+# application.yml (Spring Boot)
+logging:
+  level:
+    io.github.unattendedflight.fluent.i18n: DEBUG
+```
 
 ## 📚 Examples
 
-Check out the [examples directory](fluent-i18n-examples/) for complete working applications:
+See the [examples directory](fluent-i18n-examples/) for complete working examples:
 
-- **Simple Web App**: Basic Spring Boot application with i18n demonstrating the complete workflow
-
-## 🏗️ Architecture
-
-Fluent i18n follows a modular architecture with some separation of concerns.
-
-
-
-### Key Design Principles
-
-1. **Natural Language First**: Developers write code using natural language text
-2. **Hash-Based Keys**: Invisible hash-based keys for consistency
-3. **Standard Workflow**: Industry-standard PO file workflow for translators
-4. **Multiple Formats**: Support for JSON, Properties, and Binary output formats
-5. **Extensible**: Pluggable extractors, compilers, and message sources
-
-## 🚀 Performance
-
-- **O(1) hash-based translation lookup**
-- **Configurable caching**
-- **Thread-safe operations**
-- **Multiple output formats** (JSON, Properties, Binary)
-- **Warm-up support** for pre-loading locales
-
-## 🔒 Security
-
-- **SHA-256 hashing** for collision resistance
-- **Input validation** and sanitization
-- **Secure file operations** with path traversal protection
-- **Proper resource cleanup**
+- **Simple Web App**: Spring Boot application with fluent-i18n integration
+- **Console App**: Framework-agnostic usage example
 
 ## 🤝 Contributing
 
-I'd welcome contributions! Please see the [Contributing Guide](CONTRIBUTING.md) for details.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-**Ready to write code in your native language?** 🚀 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 

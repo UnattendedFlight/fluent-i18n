@@ -1,5 +1,6 @@
 package io.github.unattendedflight.fluent.i18n.maven;
 
+import io.github.unattendedflight.fluent.i18n.config.FluentConfig;
 import io.github.unattendedflight.fluent.i18n.extractor.ExtractedMessage;
 import io.github.unattendedflight.fluent.i18n.extractor.SourceLocation;
 import java.util.ArrayList;
@@ -120,6 +121,7 @@ public class ExtractMojo extends AbstractFluentI18nMojo {
             PoFileGenerator generator = new PoFileGenerator(
                 poDirectory.toPath(),
                 config.getSupportedLocales(),
+                getConfiguration().getDefaultLocale().toLanguageTag(),
                 true  // Always preserve existing translations for external editor workflow
             );
             generator.generatePoFiles(result);
@@ -157,77 +159,41 @@ public class ExtractMojo extends AbstractFluentI18nMojo {
      * and source directories, and optionally includes test sources if enabled.
      *
      * @return The configured ExtractionConfig instance.
-     * @throws IOException If an I/O error occurs during the configuration process.
      */
-    private ExtractionConfig buildExtractionConfig() throws IOException {
-        // Get configuration from application properties (primary source)
-        FluentI18nProperties appConfig = getConfiguration();
+    private ExtractionConfig buildExtractionConfig() {
+        FluentConfig config = getConfiguration();
 
-        // Initialize with application configuration
-        ExtractionConfig config = ExtractionConfig.builder()
+        // Build extraction configuration
+        ExtractionConfig builder = new ExtractionConfig()
             .projectRoot(project.getBasedir().toPath())
             .sourceDirectories(getSourceDirectoriesPaths());
 
-        // Set supported locales from application config
-        Set<Locale> appLocales = appConfig.getSupportedLocales();
-        if (!appLocales.isEmpty()) {
-            config.supportedLocales(appLocales.stream()
+        // Use configured locales, fallback to Maven plugin parameter
+        Set<Locale> configuredLocales = config.getSupportedLocales();
+        if (!configuredLocales.isEmpty()) {
+            builder.supportedLocales(configuredLocales.stream()
                 .map(Locale::toLanguageTag)
                 .collect(Collectors.toSet()));
         } else {
-            // Fallback to Maven plugin configuration
-            config.supportedLocales(getSupportedLocalesSet());
+            builder.supportedLocales(getSupportedLocalesSet());
         }
 
-        // Set source encoding from application config
-        FluentI18nProperties.Extraction appExtraction = appConfig.getExtraction();
-        String appSourceEncoding = appExtraction.getSourceEncoding();
-        if (appSourceEncoding != null && !appSourceEncoding.isEmpty()) {
-            config.sourceEncoding(Charset.forName(appSourceEncoding));
-        } else {
-            // Fallback to Maven plugin configuration
-            config.sourceEncoding(Charset.forName(encoding));
+        // Use configured encoding, fallback to Maven plugin parameter
+        builder.sourceEncoding(config.getEncoding());
+
+        // Use Maven plugin extraction patterns (these are build-specific)
+        for (String pattern : getExtractionPatternsList()) {
+            builder.addMethodCallPattern(pattern);
         }
 
-        // Set extraction patterns from application config
-        List<String> appMethodCallPatterns = appExtraction.getMethodCallPatterns();
-        if (!appMethodCallPatterns.isEmpty()) {
-            for (String pattern : appMethodCallPatterns) {
-                config.addMethodCallPattern(pattern);
-            }
-        } else {
-            // Fallback to Maven plugin configuration
-            for (String pattern : getExtractionPatternsList()) {
-                config.addMethodCallPattern(pattern);
-            }
-        }
-
-        // Set annotation patterns from application config
-        List<String> appAnnotationPatterns = appExtraction.getAnnotationPatterns();
-        if (!appAnnotationPatterns.isEmpty()) {
-            for (String pattern : appAnnotationPatterns) {
-                config.addAnnotationPattern(pattern);
-            }
-        }
-
-        // Set template patterns from application config
-        List<String> appTemplatePatterns = appExtraction.getTemplatePatterns();
-        if (!appTemplatePatterns.isEmpty()) {
-            for (String pattern : appTemplatePatterns) {
-                config.addTemplatePattern(pattern);
-            }
-        }
-
-        // Add test sources if enabled (always use Maven plugin config for this)
+        // Add test sources if enabled
         if (scanTestSources) {
-            List<Path> allSources = new ArrayList<>(config.getSourceDirectories());
-            Path testJavaPath = project.getBasedir().toPath().resolve("src/test/java");
-            Path testResourcesPath = project.getBasedir().toPath().resolve("src/test/resources");
-            allSources.add(testJavaPath);
-            allSources.add(testResourcesPath);
-            config.sourceDirectories(allSources);
+            List<Path> allSources = new ArrayList<>(getSourceDirectoriesPaths());
+            allSources.add(project.getBasedir().toPath().resolve("src/test/java"));
+            allSources.add(project.getBasedir().toPath().resolve("src/test/resources"));
+            builder.sourceDirectories(allSources);
         }
 
-        return config;
+        return builder;
     }
 }

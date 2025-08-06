@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Fluent i18n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-04T18:15:47.9379841\n"
-"PO-Revision-Date: 2025-08-04T18:15:47.9379841\n"
+"POT-Creation-Date: 2025-08-06T15:37:09.0915701\n"
+"PO-Revision-Date: 2025-08-06T15:37:09.0915701\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -17,273 +17,273 @@ msgstr ""
 #: src\main\java\com\example\fluenti18n\service\UserService.java:40
 #. hash: u25FG0ykU-9
 msgid "User name is required"
-msgstr ""
+msgstr "User name is required"
 
 #: src\main\resources\templates\orders.html:82
 #. hash: SeltfN9YBpz
 msgid "Amount"
-msgstr ""
+msgstr "Amount"
 
 #: src\main\resources\templates\user-profile.html:44
 #. hash: ZM64lUO3_iV
 msgid "Profile Information"
-msgstr ""
+msgstr "Profile Information"
 
 #: src\main\java\com\example\fluenti18n\controller\HomeController.java:23
 #. hash: B2YX5vBnA4f
 msgid "This application demonstrates natural text internationalization"
-msgstr ""
+msgstr "This application demonstrates natural text internationalization"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:25
 #. hash: iOo_d6iDNTF
 msgid "Looking up user with ID: {}"
-msgstr ""
+msgstr "Looking up user with ID: {}"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:60
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:58
 #. hash: SheT6ZAM0xK
 msgid "User not found"
-msgstr ""
+msgstr "User not found"
 
 #: src\main\resources\templates\home.html:78
 #. hash: b8JyeDa5s-H
 msgid "Standard PO file workflow for translators"
-msgstr ""
+msgstr "Standard PO file workflow for translators"
 
 #: src\main\resources\templates\orders.html:83
 #. hash: kg5BPH1BG2H
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src\main\resources\templates\home.html:6
 #. hash: 0sf2vgmklvS
 msgid "Home Page"
-msgstr ""
+msgstr "Home Page"
 
 #: src\main\resources\templates\home.html:21
 #: src\main\resources\templates\orders.html:32
 #: src\main\resources\templates\user-profile.html:23
 #. hash: pP5lJk7327O
 msgid "Language"
-msgstr ""
+msgstr "Language"
 
 #: src\main\resources\templates\orders.html:59
 #. hash: gHWzWiheMAp
 msgid "Total Orders"
-msgstr ""
+msgstr "Total Orders"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:22
 #. hash: 0zLa3xZG-xC
 msgid "Shipped"
-msgstr ""
+msgstr "Shipped"
 
 #: src\main\resources\templates\orders.html:85
 #. hash: _4BZ3GdSr90
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
 #: src\main\resources\templates\user-profile.html:48
 #. hash: lpzL089jAOz
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src\main\java\com\example\fluenti18n\controller\HomeController.java:22
 #. hash: lPkYEGB0JJb
 msgid "Welcome to our amazing application!"
-msgstr ""
+msgstr "Welcome to our amazing application!"
 
 #: src\main\resources\templates\home.html:75
 #. hash: HgiZGRl7-DJ
 msgid "Automatic message extraction from source code"
-msgstr ""
+msgstr "Automatic message extraction from source code"
 
 #: src\main\resources\templates\home.html:81
 #. hash: LOrRMeKaXCm
 msgid "Hash-based keys invisible to developers"
-msgstr ""
+msgstr "Hash-based keys invisible to developers"
 
 #: src\main\resources\templates\home.html:70
 #. hash: HUEFoHB96r_
 msgid "Key Features"
-msgstr ""
+msgstr "Key Features"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:31
 #. hash: DegN43Ao26d
 msgid "Found user: {}"
-msgstr ""
+msgstr "Found user: {}"
 
 #: src\main\resources\templates\orders.html:108
 #: src\main\resources\templates\user-profile.html:53
 #. hash: 7seEJndjUvH
 msgid "Back to Home"
-msgstr ""
+msgstr "Back to Home"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:21
 #. hash: yOPpKmLs8YE
 msgid "Processing"
-msgstr ""
+msgstr "Processing"
 
 #: src\main\resources\templates\user-profile.html:47
 #. hash: 3NHVIj9zs6l
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: src\main\resources\templates\orders.html:71
 #. hash: QXemnANPCDT
 msgid "Completed Orders"
-msgstr ""
+msgstr "Completed Orders"
 
 #: src\main\resources\templates\home.html:54
 #. hash: PbZfjCp9GGG
 msgid "Navigation"
-msgstr ""
+msgstr "Navigation"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:45
 #. hash: DwyKS62F9vj
 msgid "Please provide a valid email address"
-msgstr ""
+msgstr "Please provide a valid email address"
 
 #: src\main\resources\templates\home.html:72
 #. hash: cHyaRpLq5NS
 msgid "Write code using natural language text"
-msgstr ""
+msgstr "Write code using natural language text"
 
 #: src\main\resources\templates\user-profile.html:46
 #. hash: eWfgiae5RGT
 msgid "User ID"
-msgstr ""
+msgstr "User ID"
 
 #: src\main\resources\templates\orders.html:80
 #. hash: vzdjODqvQwa
 msgid "Customer"
-msgstr ""
+msgstr "Customer"
 
 #: src\main\resources\templates\orders.html:67
 #. hash: smEVlGjxLM4
 msgid "Processing Orders"
-msgstr ""
+msgstr "Processing Orders"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:84
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:82
 #: src\main\resources\templates\home.html:62
 #: src\main\resources\templates\orders.html:6
 #: src\main\resources\templates\orders.html:50
 #. hash: 0Je1A0t9R0Z
 msgid "Order Management"
-msgstr ""
+msgstr "Order Management"
 
 #: src\main\resources\templates\home.html:49
 #. hash: 5-6hqP5O71c
 msgid "Application Statistics"
-msgstr ""
+msgstr "Application Statistics"
 
 #: src\main\resources\templates\orders.html:53
 #. hash: hFyoN969RWQ
 msgid "Order Overview"
-msgstr ""
+msgstr "Order Overview"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:45
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:43
 #. hash: ZnpDbw71ov4
 #. context: plural:zero=No users registered yet,other={} users are using our app,one=One user is using our app
 msgid "{0, plural, zero {No users registered yet} one {One user is using our app} other {{} users are using our app}}"
-msgstr ""
+msgstr "{0, plural, zero {No users registered yet} one {One user is using our app} other {{} users are using our app}}"
 
 #: src\main\resources\templates\home.html:39
 #. hash: rFEGRLBwkVL
 msgid "Natural Text Internationalization Demo"
-msgstr ""
+msgstr "Natural Text Internationalization Demo"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:29
 #. hash: Is8qQBvNFGq
 msgid "User with ID {} was not found"
-msgstr ""
+msgstr "User with ID {} was not found"
 
 #: src\main\resources\templates\orders.html:79
 #. hash: 2J2Eh86CI9G
 msgid "Order ID"
-msgstr ""
+msgstr "Order ID"
 
 #: src\main\resources\templates\home.html:57
 #. hash: X2qmpzIE-6n
 msgid "View User Profile"
-msgstr ""
+msgstr "View User Profile"
 
 #: src\main\resources\templates\orders.html:63
 #. hash: f_QK0n0bS4d
 msgid "Pending Orders"
-msgstr ""
+msgstr "Pending Orders"
 
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:66
+#: src\main\java\com\example\fluenti18n\controller\HomeController.java:64
 #. hash: PI9cX1qs926
 msgid "User Profile for {}"
-msgstr ""
+msgstr "User Profile for {}"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:20
 #. hash: MxVRsN5BV8m
 msgid "Pending"
-msgstr ""
+msgstr "Pending"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:23
 #. hash: kGEVZXOQ82d
 msgid "Delivered"
-msgstr ""
+msgstr "Delivered"
 
 #: src\main\resources\templates\orders.html:81
 #. hash: -574lBdcMnR
 msgid "Product"
-msgstr ""
+msgstr "Product"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:70
 #. hash: ohhkDUIHcSw
 msgid "Name must be at least 2 characters long"
-msgstr ""
+msgstr "Name must be at least 2 characters long"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:52
 #. hash: UTKmpCfdFF_
 msgid "Created new user: {} with email {}"
-msgstr ""
+msgstr "Created new user: {} with email {}"
 
 #: src\main\resources\templates\user-profile.html:6
 #: src\main\resources\templates\user-profile.html:41
 #. hash: 7nZy4sFLSiY
 msgid "User Profile"
-msgstr ""
+msgstr "User Profile"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:24
 #. hash: 01OpnrRVaEf
 msgid "Cancelled"
-msgstr ""
+msgstr "Cancelled"
 
 #: src\main\resources\templates\orders.html:84
 #. hash: 7aP1RXHsgzS
 msgid "Order Date"
-msgstr ""
+msgstr "Order Date"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:73
 #. hash: T5hOaVJcOV3
 msgid "User validation successful"
-msgstr ""
+msgstr "User validation successful"
 
 #: src\main\resources\templates\orders.html:54
 #. hash: 1L3Kj1FmpQa
 msgid "Manage and track all customer orders"
-msgstr ""
+msgstr "Manage and track all customer orders"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:62
 #. hash: aSU3SLFOxC2
 msgid "Name field cannot be empty"
-msgstr ""
+msgstr "Name field cannot be empty"
 
 #: src\main\resources\templates\orders.html:100
 #. hash: kHicEtBzG0Q
 msgid "View Details"
-msgstr ""
+msgstr "View Details"
 
 #: src\main\java\com\example\fluenti18n\service\UserService.java:66
 #. hash: 1uUrNs5fd1S
 msgid "Email must be a valid email address"
-msgstr ""
+msgstr "Email must be a valid email address"
 
 #: src\main\resources\templates\orders.html:101
 #. hash: RkxP_QGeHpa
 msgid "Edit"
-msgstr ""
+msgstr "Edit"
 

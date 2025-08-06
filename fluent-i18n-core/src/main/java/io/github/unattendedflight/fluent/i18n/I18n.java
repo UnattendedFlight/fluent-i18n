@@ -1,68 +1,137 @@
 package io.github.unattendedflight.fluent.i18n;
 
+import io.github.unattendedflight.fluent.i18n.config.FluentConfig;
+import io.github.unattendedflight.fluent.i18n.config.FluentConfigLoader;
 import io.github.unattendedflight.fluent.i18n.core.ContextBuilder;
 import io.github.unattendedflight.fluent.i18n.core.HashGenerator;
 import io.github.unattendedflight.fluent.i18n.core.MessageDescriptor;
 import io.github.unattendedflight.fluent.i18n.core.MessageFormatter;
+import io.github.unattendedflight.fluent.i18n.core.MessageSourceFactory;
 import io.github.unattendedflight.fluent.i18n.core.NaturalTextMessageSource;
 import io.github.unattendedflight.fluent.i18n.core.PluralBuilder;
 import io.github.unattendedflight.fluent.i18n.core.Sha256HashGenerator;
 import io.github.unattendedflight.fluent.i18n.core.TranslationResult;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Utility class for internationalization (i18n) providing text translation,
- * localization, and context-aware message handling.
- * This class operates using natural text as input and supports thread-local
- * locale settings, caching of message hashes, and integration with custom message
- * sources and hash generators.
+ * Provides internationalization (i18n) capabilities such as translation, locale management,
+ * text formatting, and message registration. Central to enabling applications to support
+ * multiple languages and cultures efficiently.
+ *
+ * Designed to work with natural text keys for clear and maintainable translation processes,
+ * falling back to default text or system configurations when translations or settings are missing.
+ *
+ * Includes mechanisms for caching, formatting, and hash-based message retrieval to optimize
+ * performance and accommodate dynamic or variable content.
  */
 public final class I18n {
     private static volatile NaturalTextMessageSource messageSource;
     private static final ThreadLocal<Locale> currentLocale = new ThreadLocal<>();
     private static final Map<String, String> hashCache = new ConcurrentHashMap<>();
     private static HashGenerator hashGenerator = new Sha256HashGenerator();
+    private static FluentConfig config;
+    private static boolean initialized = false;
     
     private I18n() {} // Utility class
     
     /**
-     * Initializes the internationalization system with the specified message source.
-     * This method sets the global message source that will be used for resolving translations.
+     * Initializes the internationalization system with a specified message source.
      *
-     * @param source the message source to be used for translation lookups and management
+     * @param source The primary source of natural language messages. Must not be null.
+     *               Setting this determines the basis for all subsequent translations.
+     *               Ensure the provided source is configured correctly, as any errors
+     *               here may lead to missing or incorrect translations.
      */
     public static void initialize(NaturalTextMessageSource source) {
         messageSource = source;
+        initialized = true;
     }
     
     /**
-     * Sets the hash generator to be used for generating consistent hashes from natural text.
-     * The specified hash generator will replace the current hash generator, if any,
-     * and will be utilized by the system for text hash generation processes.
+     * Configures the internationalization system using a fluent-style configuration.
+     * This method ensures that subsequent operations rely on the provided configuration
+     * and initializes the message source accordingly.
      *
-     * @param generator The HashGenerator implementation to set, which will compute
-     *                  hashes for natural text.
+     * @param fluentConfig The configuration object defining localization settings and behavior.
+     *                     Must be pre-validated and non-null. A misconfigured object could
+     *                     result in improper localization or translation errors.
      */
+    public static void initialize(FluentConfig fluentConfig) {
+        config = fluentConfig;
+        messageSource = MessageSourceFactory.createMessageSource(fluentConfig);
+        initialized = true;
+    }
+    
+    /**
+     * Convenience method to initialize the internationalization system using default FluentConfig.
+     * Abstracts away the need to manually configure and pass the FluentConfig instance.
+     *
+     * Useful for setups where a preconfigured FluentConfig instance is expected to suffice.
+     *
+     * Relies on `FluentConfigLoader` to load configuration, so any misconfiguration or failure
+     * in `FluentConfigLoader` impacts initialization. Ensure the loader is functioning correctly
+     * and the underlying configuration is valid.
+     *
+     * If the system was already initialized, this may override specific settings depending on
+     * the loaded configuration, which*/
+    public static void initialize() {
+        FluentConfigLoader loader = new FluentConfigLoader();
+        FluentConfig loadedConfig = loader.load();
+        initialize(loadedConfig);
+    }
+    
+    /**
+     * Configures and initializes the system using a specified configuration file path.
+     *
+     * @param configLocation The path to the configuration file. This must point to a valid,
+     *                       readable file structured correctly for FluentConfig. An invalid path
+     *                       or malformed configuration can cause initialization to fail,
+     *                       potentially leaving the system in an unusable state.
+     *
+     * Business logic assumes this is used when a file-based configuration source is required
+     * rather than a programmatically defined FluentConfig object. It's particularly useful in
+     * environments where configuration is externalized or managed separately.
+     * Ensure*/
+    public static void initialize(String configLocation) {
+        FluentConfigLoader loader = new FluentConfigLoader();
+        FluentConfig loadedConfig = loader.load(configLocation);
+        initialize(loadedConfig);
+    }
+    
+    /**
+     * Sets the hash generator implementation to be used for generating unique hashes
+     * corresponding to natural text inputs within the internationalization system.
+     *
+     * @param generator the {@link HashGenerator} implementation, which must be capable
+     *                  of producing consistent and collision-resistant hashes. Passing
+     *                  a null value or a poorly implemented generator could result in
+     *                  invalid message lookups or undefined behavior when resolving
+     *                  translations, as hashes serve as keys for internal caching mechanisms.
+     *
+     * Business Logic:
+     * Switching the hash generator should only happen during initialization or controlled
+     * contexts where the application logic ensures no*/
     public static void setHashGenerator(HashGenerator generator) {
         hashGenerator = generator;
     }
     
     /**
-     * Translates the given natural language text to the current locale, with optional arguments for formatting.
-     * If no translation is found, the original natural text is returned as a fallback.
+     * Translates the given natural language text into the current locale's language, applying placeholders
+     * where specified. Falls back to the original input if no translation is found.
      *
-     * @param naturalText The natural language text to be translated. If null, the method will return null.
-     * @param args Optional arguments used to format the translated text.
-     * @return The translated and optionally formatted text if a translation exists; otherwise, the original natural text formatted with the provided arguments.
-     */
+     * @param naturalText the input text to be translated; must be non-null to ensure meaningful processing.
+     *                    Passing null returns null directly.
+     * @param args optional arguments used to replace placeholders in the translated text. These should
+     *             be compatible with the current locale's format.
+     * @return the translated text in the target locale, formatted with the provided arguments if placeholders
+     *         exist. If no translation is*/
     public static String translate(String naturalText, Object... args) {
         if (naturalText == null) return null;
         
+        ensureInitialized();
         Locale locale = getCurrentLocale();
         String hash = getOrGenerateHash(naturalText);
         
@@ -78,235 +147,271 @@ public final class I18n {
     }
     
     /**
-     * Translates the provided natural text into the current locale, using optional arguments for formatting.
-     * If a translation is not found for the specified text, the original natural text is returned as a fallback.
+     * Retrieves a localized version of the given natural language text, formatted with arguments.
+     * Uses the current locale and the underlying message source to resolve translations.
+     * If no translation is found, the input text is returned as a fallback.
      *
-     * @param naturalText The natural text to be translated. This is the default fallback text if no translation is found.
-     * @param args Optional arguments for formatting the translated text or natural text.
-     * @return The translated and formatted text if a translation is found; otherwise, the original natural text formatted with the provided arguments.
-     */
+     * @param naturalText The human-readable natural language text to translate. Must be non-null.
+     *                    This text serves as a key for translation and is returned if no
+     *                    localization is available.
+     * @param args Optional arguments to replace placeholders in the translated text. These allow
+     *             for dynamic content insertion into the resolved message.
+     * @return*/
     public static String t(String naturalText, Object... args) {
         return translate(naturalText, args);
     }
 
     /**
-     * Resolves a message descriptor to a translated string using the current locale.
+     * Resolves a localized translation for the given message descriptor based on the current locale.
+     * If the descriptor is `null`, returns `null`. Ensures the internationalization system
+     * is initialized before attempting resolution.
      *
-     * @param descriptor the {@code MessageDescriptor} containing the information to resolve the message.
-     *                   If null, the method will return null.
-     * @return the translated string for the message descriptor based on the current locale, or null if the descriptor is null.
-     */
+     * The resolution uses the current application locale and falls back to the descriptor's
+     * natural text if no translation exists. Edge cases include:
+     * - Null descriptors returning `null` to signal absence of a message.
+     * - Uninitialized systems triggering a deferred automatic initialization.
+     *
+     * @param descriptor The message descriptor representing the text to be translated.
+     *                   Must not be `*/
     public static String resolve(MessageDescriptor descriptor) {
         if (descriptor == null) return null;
-
-        Locale locale = getCurrentLocale();
-        return resolve(descriptor, locale);
+        
+        ensureInitialized();
+        return resolve(descriptor, getCurrentLocale());
     }
 
     /**
-     * Resolves a translation for the given message descriptor, locale, and arguments.
+     * Resolves the natural language text associated with the provided message descriptor, formatted for the given locale
+     * and arguments. This method prioritizes localized translations from a message source but falls back to the descriptor's
+     * natural text if none are available.
      *
-     * The method attempts to fetch the translation associated with the descriptor's hash and natural text
-     * from the `messageSource`. If a matching translation is found, it formats the result using the provided
-     * arguments and locale. If no translation is found, it falls back to formatting the natural text of the descriptor.
-     *
-     * @param descriptor The message descriptor containing the hash, natural text, and optional arguments. Must not be null.
-     * @param locale The target locale used for the translation and formatting.
-     * @param args Optional arguments used for placeholder substitution in the resolved or fallback message.
-     * @return The translated and formatted message if the hash resolves to a translation; otherwise, the formatted fallback natural text.
-     */
+     * @param descriptor The message descriptor encapsulating the natural text and its unique hash. Must not be null;
+     *                   if null, the method returns null.
+     * @param locale     The desired locale for resolving translations. If no translations exist for this locale or
+     *                   if the locale is null, fallback behavior applies.
+     * @param args       Optional arguments to*/
     public static String resolve(MessageDescriptor descriptor, Locale locale, Object... args) {
         if (descriptor == null) return null;
-
+        
+        ensureInitialized();
+        Locale currentLocale = getCurrentLocale();
         String hash = descriptor.getHash();
 
-        if (messageSource != null) {
-            TranslationResult result = messageSource.resolve(hash, descriptor.getNaturalText(), locale);
-            if (result.isFound()) {
-                return formatMessage(result.getTranslation(), args, locale);
-            }
+        if (messageSource != null && messageSource.exists(hash, locale)) {
+          TranslationResult result = messageSource.resolve(hash, descriptor.getNaturalText(), locale);
+           if (result.isFound()) {
+               return formatMessage(result.getTranslation(), args, locale);
+           }
         }
-
-        // Fallback to original natural text
         return formatMessage(descriptor.getNaturalText(), args, locale);
     }
 
     /**
-     * Creates a {@code MessageDescriptor} for the given text variable and optional arguments.
+     * Constructs a `MessageDescriptor` using a variable template and optional arguments.
+     * Ensures the internationalization system is properly initialized before proceeding.
      *
-     * @param textVariable The natural text variable that forms the basis of the message descriptor.
-     *                     Cannot be null or empty.
-     * @param args         Additional arguments to include in the message descriptor.
-     * @return A {@code MessageDescriptor} constructed with the provided text variable and arguments.
-     * @throws IllegalArgumentException If {@code textVariable} is null or empty.
-     */
+     * @param textVariable The template for the message, serving as an identifier for localization.
+     *                     This should be a meaningful and unique natural language string.
+     * @param args Optional arguments to format the message dynamically. Use these to inject
+     *             variable parts into the message, such as user-specific data or placeholders.
+     * @return A `MessageDescriptor` containing the template's unique hash, text, and provided arguments.
+     *         Useful for deferred resolution and efficient localization handling*/
     public static MessageDescriptor variable(String textVariable, Object... args) {
-        if (textVariable == null || textVariable.isEmpty()) {
-            throw new IllegalArgumentException("Text variable cannot be null or empty");
-        }
-
-        // Generate a hash for the variable text
-        return new MessageDescriptor(getOrGenerateHash(textVariable), textVariable, args);
+        ensureInitialized();
+        String hash = getOrGenerateHash(textVariable);
+        return new MessageDescriptor(hash, textVariable, args);
     }
 
     /**
-     * Constructs a MessageDescriptor for the provided variable text.
+     * Generates a `MessageDescriptor` for a defined text variable, ensuring its hash is
+     * uniquely calculated or retrieved. Used for handling reusable, localized text fragments.
      *
-     * @param textVariable The natural text representing the variable.
-     *                     Must not be null or empty.
-     * @return A MessageDescriptor object for the given variable text.
-     * @throws IllegalArgumentException If the textVariable is null or empty.
-     */
+     * @param textVariable The human-readable text of the variable, which serves as an input for hash generation.
+     *                     Must be consistently provided to ensure deterministic hash generation.
+     *                     If null or empty, edge cases in downstream hash generation logic might occur.
+     *
+     * @return A `MessageDescriptor` object containing the hash, natural text, and default arguments (empty array).
+     *         Ensures the text is encapsulated for future*/
     public static MessageDescriptor variable(String textVariable) {
-        return variable(textVariable, new Object[0]);
+        ensureInitialized();
+        String hash = getOrGenerateHash(textVariable);
+        return new MessageDescriptor(hash, textVariable, new Object[0]);
     }
-    
+
     /**
-     * Creates a message descriptor for a given natural language text and arguments.
-     * Constructs a {@link MessageDescriptor} object that encapsulates the hash of
-     * the text, the text itself, and any additional arguments provided.
+     * Describes a message by associating it with a unique hash for localization and
+     * metadata purposes. Ensures the internationalization system is initialized before use.
+     * The hash is either fetched from a cache or generated to uniquely represent the natural text.
+     * Arguments can be attached to support runtime message formatting.
      *
-     * @param naturalText The natural language text to describe. This is the main content
-     *                    used for message resolution.
-     * @param args        Optional arguments that can be used for formatting the text or
-     *                    for message placeholders.
-     * @return A {@link MessageDescriptor} object containing the generated hash, the
-     *         provided natural text, and the associated arguments.
-     */
+     * @param naturalText The natural language text of the message. Treated as a key for translation
+     *                    and hash generation. Avoid null or dynamically constructed strings
+     *                    for predictable behavior.
+     * @param args        Optional runtime arguments used for message formatting. May be empty*/
     public static MessageDescriptor describe(String naturalText, Object... args) {
+        ensureInitialized();
         String hash = getOrGenerateHash(naturalText);
         return new MessageDescriptor(hash, naturalText, args);
     }
-    
+
     /**
-     * Creates a {@link PluralBuilder} instance for handling pluralization of natural text
-     * based on the provided count and the current locale.
+     * Creates a PluralBuilder to handle pluralization logic based on the given count and current locale.
+     * Ensures the internationalization system is initialized before proceeding.
      *
-     * @param count the numerical value to determine the appropriate plural form
-     * @return a {@link PluralBuilder} instance to configure and format pluralized text
+     * @param count The numeric value used to determine the pluralization form.
+     *              Expected to be non-null. Edge cases like negative numbers or non-integral values will
+     *              follow locale-specific rules, which may vary significantly.
+     * @return A PluralBuilder preconfigured with the current locale and message source.
+     *         Facilitates generation of grammatically correct plural phrases, even in
+     *         complex linguistic contexts.
      */
     public static PluralBuilder plural(Number count) {
+        ensureInitialized();
         return new PluralBuilder(count, getCurrentLocale(), messageSource, hashGenerator);
     }
 
     /**
-     * Resolves and retrieves a localized message for the given key using the current locale and arguments.
-     * If a translation is found in the message source, it is formatted with the provided arguments and returned.
-     * Otherwise, the original key is formatted and returned as a fallback.
+     * Resolves a translation key (hash) to its localized message, formatting it with arguments if necessary.
      *
-     * @param hash the key to look up in the message source; must not be null or empty
-     * @param args the arguments to format the resolved message with; may be empty
-     * @return the resolved and formatted message if found, otherwise the formatted original key; returns null if the key is null or empty
-     */
+     * Translates the given hash for the current or default locale if available, formatting the result using the specified arguments.
+     * Falls back to using the hash itself as the message template if no translation can be resolved.
+     *
+     * Handles scenarios where a translation might exist only for the default locale but not the current one.
+     * Ensures graceful degradation in the absence of translations by using the hash as a fallback message.
+     *
+     * @param hash The key representing the text to translate. Expected to be a unique*/
     public static String resolveKey(String hash, Object... args) {
-        if (hash == null || hash.isEmpty()) return null;
-
+        ensureInitialized();
         Locale locale = getCurrentLocale();
-
-        if (messageSource != null) {
+        
+        if (messageSource != null && messageSource.exists(hash, locale)) {
             TranslationResult result = messageSource.resolve(hash, hash, locale);
             if (result.isFound()) {
                 return formatMessage(result.getTranslation(), args, locale);
             }
         }
+      // We should not immediately fall back to formatMessage as we only have the hash.
+      // We need to use the default locale to get the message.
+      if (messageSource.exists(hash, config.getDefaultLocale())) {
+        TranslationResult result = messageSource.resolve(hash, hash, config.getDefaultLocale());
+        if (result.isFound()) {
+          return formatMessage(result.getTranslation(), args, locale);
+        }
+      }
 
-        // Fallback to original key
-        return formatMessage(hash, args, locale);
+      return formatMessage(hash, args, locale);
+
     }
 
     /**
-     * Resolves the given key and returns the corresponding value as a string.
+     * Resolves a unique message key (hash) to its localized translation using the current locale.
+     * If the key is not found for the current locale, it falls back to the default locale.
+     * If no translation is found, the hash itself is returned formatted with arguments.
      *
-     * @param key the key to be resolved
-     * @return the resolved value corresponding to the given key
-     */
+     * Business logic: Ensures messages are localized and formatted consistently across languages,
+     * while handling scenarios where translations might be missing for specific locales.
+     * Minimizes disruptions by using fallback mechanisms and formatting placeholders
+     * directly into the hash when all else fails.
+     *
+     * Edge cases:
+     * - If the*/
     public static String resolveKey(String key) {
         return resolveKey(key, new Object[0]);
     }
-    
+
     /**
-     * Creates a {@code ContextBuilder} for the specified translation context.
+     * Creates a {@link ContextBuilder} for managing translations tied to a specific context.
+     * Ensures the internationalization system is initialized before proceeding. The context
+     * serves as a logical namespace for organizing and resolving translations, preventing
+     * message collisions in systems with overlapping natural text.
      *
-     * The created {@code ContextBuilder} allows translations to be performed
-     * within the specified context, providing additional semantics for resolving
-     * translations of texts that can have different meanings based on context.
+     * The returned builder allows defining and resolving translations scoped to the provided context,
+     * utilizing the configured message source and hash generator.
      *
-     * @param context the context for the translation, which serves as a
-     *                discriminator for translations of natural text
-     * @return a {@code ContextBuilder} instance initialized with the specified
-     *         context
+     * @param contextKey The logical grouping or namespace for translations. Used to scope and
+     *                disambiguate natural text with identical wording but different meanings.
      */
-    public static ContextBuilder context(String context) {
-        return new ContextBuilder(context, messageSource, hashGenerator);
+    public static ContextBuilder context(String contextKey) {
+        ensureInitialized();
+        return new ContextBuilder(contextKey, contextKey, messageSource, hashGenerator);
     }
-    
+
     /**
-     * Sets the current locale for the application.
-     * The specified locale will be used to determine the language and region-specific
-     * behavior during internationalization processes.
+     * Updates the current thread's locale, influencing features like text formatting and resource bundles.
+     * Setting null forces default locale fallback, but should be avoided.
      *
-     * @param locale the {@code Locale} to be set as the current locale
+     * @param locale the Locale to set for this thread's context; ensure it's valid and supported in your application.
      */
     public static void setCurrentLocale(Locale locale) {
         currentLocale.set(locale);
+        if (locale == null) {
+          System.err.println("Warning: I18n.setCurrentLocale was set to null. To avoid potential issues, provide a Locale object.");
+        }
     }
     
     /**
-     * Retrieves the current locale used for translations and formatting.
-     * If a locale is not explicitly set, it falls back to Spring's LocaleContextHolder
-     * or the system default locale as a last resort.
+     * Resolves the current thread-specific locale, falling back to the system default if none is set.
+     * Ensures threads without a specified locale still align with default system behavior.
+     * Handle edge cases where thread-local storage might be uninitialized.
      *
-     * @return the current locale in use; if not explicitly set, returns the fallback locale
+     * @return the thread-specific locale if set; otherwise, the system default locale.
      */
     public static Locale getCurrentLocale() {
         Locale locale = currentLocale.get();
         if (locale != null) return locale;
         
-        // Fallback to Spring's LocaleContextHolder if available
-        try {
-            return LocaleContextHolder.getLocale();
-        } catch (Exception e) {
-            return Locale.getDefault();
-        }
+        // Fallback to system default locale
+        return Locale.getDefault();
     }
     
     /**
-     * Clears the current locale associated with the current thread.
-     *
-     * This method removes the locale setting stored in the thread-local variable.
-     * It is typically used to clean up the locale information after processing
-     * is complete, such as at the end of a request lifecycle in a web application.
+     * Clears the thread-local locale context to prevent it from unintentionally
+     * leaking across requests or operations. Crucial for maintaining localization
+     * correctness in multi-threaded environments. Ensure this is called when the
+     * locale is no longer needed in the current thread.
      */
     public static void clearCurrentLocale() {
         currentLocale.remove();
     }
     
     /**
-     * Retrieves the hash for the given natural text from the cache, or generates a new hash
-     * if one does not already exist in the cache.
+     * Ensures the system is initialized before proceeding.
+     * Avoids redundant initialization by checking a flag to maintain efficiency.
+     * Critical for preventing state inconsistencies in dependent operations.
+     */
+    private static void ensureInitialized() {
+        if (!initialized) {
+            initialize();
+        }
+    }
+    
+    /**
+     * Retrieves the cached hash for the given natural text, or generates and caches a new one
+     * if it does not already exist. Hashes are used as unique identifiers for natural text
+     * to improve lookup efficiency and ensure consistency in translation operations.
      *
-     * @param naturalText The natural text for which the hash is to be retrieved or generated.
-     * @return The hash associated with the given natural text.
+     * @param naturalText the natural language text requiring a hash; must not be null.
+     *                    Caller should ensure text uniqueness if relying on hashes for resolution.
+     * @return the hash string, either retrieved from the cache or newly generated.
+     *         This value is guaranteed to be consistent for the same input text.
+     *
+     * Edge cases:
      */
     private static String getOrGenerateHash(String naturalText) {
         return hashCache.computeIfAbsent(naturalText, hashGenerator::generateHash);
     }
     
     /**
-     * Formats a message template by substituting placeholders with the provided arguments
-     * based on the specified locale. If an error occurs during formatting, it falls back
-     * to a simple substitution mechanism.
+     * Formats a localized message template with arguments, handling both complex
+     * locale-aware formatting and simple placeholder substitution for edge cases.
+     * If locale-aware formatting fails, falls back to basic substitution to ensure
+     * functionality, avoiding complete failure when arguments or format parsing
+     * are problematic. Prioritizes robustness for varied input scenarios.
      *
-     * @param template The message template containing placeholders (e.g., "{0}" or "{}")
-     *                 to be replaced with arguments. Must not be null.
-     * @param args     An array of objects to be used for substituting placeholders in
-     *                 the template. Can be null or empty if no substitution is needed.
-     * @param locale   The locale to be used for formatting. Must not be null.
-     *
-     * @return A string with placeholders in the template replaced with the respective
-     *         arguments. If there are no arguments or a formatting error occurs,
-     *         returns the original template with minimal substitution applied.
-     */
+     * @param template the message template containing placeholders (e.g., {0}, {1}, etc.)
+     * @param args an array of objects to replace placeholders; may be null or empty
+     *             to bypass formatting
+     * @param locale the locale to apply during*/
     private static String formatMessage(String template, Object[] args, Locale locale) {
         if (args == null || args.length == 0) {
             return template;
@@ -321,13 +426,16 @@ public final class I18n {
     }
     
     /**
-     * Formats the given template string by replacing placeholders with the specified arguments.
-     * Placeholders in the template are denoted with `{n}` or `{}`, where `n` is the index of the argument
-     * in the provided array.
+     * Formats the provided template by replacing placeholders with argument values.
+     * Supports indexed placeholders ({0}, {1}, etc.) and a single unindexed placeholder ({}).
+     * Useful for lightweight template-based string generation without external libraries.
      *
-     * @param template the string containing placeholders to be replaced
-     * @param args the arguments to replace the placeholders in the template
-     * @return the formatted string with placeholders replaced by the corresponding arguments
+     * Edge cases: Multiple `{}` placeholders are replaced by the same argument sequentially.
+     * Does not handle cases where `{}` and indexed placeholders overlap in meaning within the template.
+     *
+     * @param template The string containing placeholders to replace.
+     * @param args The values to substitute into the placeholders.
+     * @return The formatted string with placeholders replaced by corresponding arguments.
      */
     private static String simpleFormat(String template, Object[] args) {
         String result = template;
@@ -339,30 +447,72 @@ public final class I18n {
     }
     
     /**
-     * Retrieves a map of message hashes, where keys represent natural texts and values
-     * represent their corresponding generated hashes.
+     * Retrieves a thread-safe copy of all cached message hashes.
      *
-     * @return a thread-safe map containing message hashes
+     * Hashes serve as unique identifiers for natural language messages,
+     * enabling efficient translation lookups or resolutions in a localized system.
+     * Providing a concurrent map ensures safe access for high-concurrency environments
+     * like web applications. Changes to the returned map do not affect the underlying cache.
+     *
+     * @return a copy of the current message hash cache mapping natural text to their unique hashes.
      */
     public static Map<String, String> getMessageHashes() {
         return new ConcurrentHashMap<>(hashCache);
     }
-
+    
     /**
-     * Retrieves the current instance of the NaturalTextMessageSource used for resolving translations.
+     * Provides access to the current message source used for resolving translations.
+     * This is the core component responsible for localization in the application.
      *
-     * @return the NaturalTextMessageSource instance.
+     * @return the active {@code NaturalTextMessageSource} instance, allowing lookup and resolution
+     *         of translations based on natural text keys. Ensures consistency across the
+     *         internationalization system and must be initialized prior to usage to avoid
+     *         unexpected behavior or null references.
      */
     public static NaturalTextMessageSource getMessageSource() {
         return messageSource;
     }
     
     /**
-     * Registers a message by ensuring its hash is generated and cached.
+     * Registers a natural language message by ensuring it is assigned a unique hash.
+     * This prepares the message for translation or lookup in the message source.
      *
-     * @param naturalText The natural text of the message to be registered.
+     * @param naturalText The natural language message to register. If null, the method has no effect.
+     *                    Ensure this text is meaningful and necessary for the translation context,
+     *                    as excessive or redundant registrations may degrade performance over time.
+     *
+     * Use caution when introducing dynamic or user-generated text, as it could lead
+     * to an overwhelming number of unique hash entries, complicating localization efforts
+     * and consuming system resources unnecessarily.
      */
     public static void registerMessage(String naturalText) {
-        getOrGenerateHash(naturalText);
+        if (naturalText != null) {
+            getOrGenerateHash(naturalText);
+        }
+    }
+    
+    /**
+     * Provides access to the current FluentConfig instance, allowing inspection or modification of runtime
+     * configuration related to internationalization.
+     *
+     * @return The shared FluentConfig instance representing the global state. If the system has not been
+     *         initialized, returns the default configuration or potentially null, depending on initialization status.
+     *         Callers should ensure the system is properly initialized before accessing this, as behavior may be
+     *         undefined otherwise.
+     */
+    public static FluentConfig getConfig() {
+        return config;
+    }
+    
+    /**
+     * Indicates whether the internationalization system has been properly initialized.
+     *
+     * @return true if initialization has been successfully completed using one of the
+     *         available `initialize` methods; false if the system is uninitialized, which
+     *         may result in translation failures or improper behavior for localization tasks.
+     *         Always ensure initialization is performed before utilizing translation functionality.
+     */
+    public static boolean isInitialized() {
+        return initialized;
     }
 }

@@ -8,9 +8,12 @@ import io.github.unattendedflight.fluent.i18n.compiler.TranslationCompiler;
 import io.github.unattendedflight.fluent.i18n.compiler.PoFileParser;
 import io.github.unattendedflight.fluent.i18n.compiler.TranslationData;
 import io.github.unattendedflight.fluent.i18n.compiler.TranslationEntry;
+import io.github.unattendedflight.fluent.i18n.config.FluentConfig;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -87,13 +90,13 @@ public class CompileMojo extends AbstractFluentI18nMojo {
         try {
             CompilerConfig config = buildCompilerConfig();
 
-            // Use robust parser for statistics
-            CompilationStats stats = analyzeTranslationCompleteness(config);
 
             // Perform actual compilation
             getLog().info("Compiling translations to output format: " + config.getOutputFormats());
             TranslationCompiler compiler = new TranslationCompiler(config);
             CompilationResult result = compiler.compile();
+            // Use robust parser for statistics
+            CompilationStats stats = analyzeTranslationCompleteness(config, result);
 
             if (result.isSuccessful()) {
                 getLog().info("Compilation completed successfully:");
@@ -130,26 +133,34 @@ public class CompileMojo extends AbstractFluentI18nMojo {
      *
      * @param config the configuration of the compiler, including supported locales and PO file directory
      * @return a {@link CompilationStats} object containing statistics for each locale
-     * @throws IOException if an I/O error occurs while reading the PO files
      */
-    private CompilationStats analyzeTranslationCompleteness(CompilerConfig config) throws IOException {
+    private CompilationStats analyzeTranslationCompleteness(CompilerConfig config, CompilationResult result) {
         CompilationStats stats = new CompilationStats();
         PoFileParser parser = new PoFileParser();
         
         // Get default locale from configuration
-        FluentI18nProperties appConfig = getConfiguration();
+        FluentConfig appConfig = getConfiguration();
         String defaultLocale = appConfig.getDefaultLocale().toLanguageTag();
 
         for (String locale : config.getSupportedLocales()) {
             Path poFile = config.getPoDirectory().resolve("messages_" + locale + ".po");
 
             if (Files.exists(poFile)) {
-                TranslationData data = parser.parse(poFile);
-                LocaleStats localeStats = analyzeLocaleStats(data, locale, defaultLocale);
-                stats.addLocaleStats(locale, localeStats);
+                try {
+                    TranslationData data = parser.parse(poFile);
+                    List<Path> generatedFiles = new ArrayList<>();
+                    for (OutputFormat format : config.getOutputFormats()) {
+                      generatedFiles.addAll(result.getGeneratedFiles().get(locale + ":" + format.name()));
+                    }
+                    LocaleStats localeStats = analyzeLocaleStats(data, locale, defaultLocale, generatedFiles);
+                    stats.addLocaleStats(locale, localeStats);
+                } catch (IOException e) {
+                    getLog().warn("Failed to parse PO file " + poFile + ": " + e.getMessage());
+                    stats.addLocaleStats(locale, new LocaleStats(0, 0, Map.of()));
+                }
             } else {
                 // No PO file exists
-                stats.addLocaleStats(locale, new LocaleStats(0, 0));
+                stats.addLocaleStats(locale, new LocaleStats(0, 0, Map.of()));
             }
         }
 
@@ -169,7 +180,7 @@ public class CompileMojo extends AbstractFluentI18nMojo {
      * @param defaultLocale the default locale used as a reference, where all entries are considered translated
      * @return a LocaleStats object containing the total number of messages and the number of translated messages
      */
-    private LocaleStats analyzeLocaleStats(TranslationData data, String locale, String defaultLocale) {
+    private LocaleStats analyzeLocaleStats(TranslationData data, String locale, String defaultLocale, List<Path> outputFiles) {
         int totalMessages = data.getEntryCount();
         int translatedMessages = 0;
 
@@ -187,8 +198,16 @@ public class CompileMojo extends AbstractFluentI18nMojo {
                 }
             }
         }
-
-        return new LocaleStats(totalMessages, translatedMessages);
+        Map<String, Integer> fileTypeSizeMap = new HashMap<>();
+        for (Path path : outputFiles) {
+          String extension = path.getFileName().toString().substring(path.getFileName().toString().lastIndexOf('.') + 1);
+          try {
+            fileTypeSizeMap.put(extension, (int) Files.size(path));
+          } catch (IOException e) {
+            fileTypeSizeMap.put(extension, -1);
+          }
+        }
+        return new LocaleStats(totalMessages, translatedMessages, fileTypeSizeMap);
     }
 
     /**
@@ -210,6 +229,10 @@ public class CompileMojo extends AbstractFluentI18nMojo {
 
             getLog().info(String.format("%s: %d/%d translations (%.1f%% complete, %d missing)",
                 locale, translated, total, percentage, missing));
+            // Log file output formats and file sizes
+            for (Map.Entry<String, Integer> outputEntry : localeStats.getOutputFileSize().entrySet()) {
+              getLog().info(String.format("  %s: %s", outputEntry.getKey(), formatBytesHumanReadable(outputEntry.getValue())));
+            }
         }
 
         // Overall statistics
@@ -234,73 +257,51 @@ public class CompileMojo extends AbstractFluentI18nMojo {
      *
      * @return a configured CompilerConfig instance.
      * @throws MojoExecutionException if there is an issue with configuration values, such as invalid output formats.
-     * @throws IOException if there is an issue accessing configuration properties or file system paths.
      */
-    private CompilerConfig buildCompilerConfig() throws MojoExecutionException, IOException {
-        // Get configuration from application properties (primary source)
-        FluentI18nProperties appConfig = getConfiguration();
+    private CompilerConfig buildCompilerConfig() throws MojoExecutionException {
+        FluentConfig config = getConfiguration();
 
-        // Initialize with application configuration
-        CompilerConfig config = CompilerConfig.builder()
+        // Build compiler configuration
+        CompilerConfig builder = new CompilerConfig()
             .poDirectory(poDirectory.toPath())
             .outputDirectory(outputDirectory.toPath());
 
-        // Set supported locales from application config
-        Set<Locale> appLocales = appConfig.getSupportedLocales();
-        if (!appLocales.isEmpty()) {
-            config.supportedLocales(appLocales.stream()
+        // Use configured locales, fallback to Maven plugin parameter
+        Set<Locale> configuredLocales = config.getSupportedLocales();
+        if (!configuredLocales.isEmpty()) {
+            builder.supportedLocales(configuredLocales.stream()
                 .map(Locale::toLanguageTag)
                 .collect(Collectors.toSet()));
         } else {
-            // Fallback to Maven plugin configuration
-            config.supportedLocales(getSupportedLocalesSet());
+            builder.supportedLocales(getSupportedLocalesSet());
         }
 
-        // Set output format from application config
-        FluentI18nProperties.Compilation appCompilation = appConfig.getCompilation();
-        String appOutputFormat = appCompilation.getOutputFormat();
-        getLog().info("appOutputFormat: " + appOutputFormat);
-        if (appOutputFormat != null && !appOutputFormat.isEmpty()) {
+        // Map message source type to output format, fallback to Maven plugin parameter
+        FluentConfig.MessageSourceType messageSourceType = config.getMessageSourceType();
+        if (messageSourceType != FluentConfig.MessageSourceType.AUTO) {
             try {
-                String[] formats = appOutputFormat.split(",");
-                OutputFormat[] outputFormats = new OutputFormat[formats.length];
-                for (int i = 0; i < formats.length; i++) {
-                    outputFormats[i] = OutputFormat.valueOf(formats[i].trim().toUpperCase());
-                }
-                config.outputFormats(outputFormats);
+                OutputFormat format = OutputFormat.valueOf(messageSourceType.name());
+                builder.outputFormats(format);
             } catch (IllegalArgumentException e) {
-                throw new MojoExecutionException(
-                    "Invalid output format in application config: " + appOutputFormat);
+                getLog().warn("Invalid message source type: " + messageSourceType + ", using Maven plugin config");
+                OutputFormat format = OutputFormat.valueOf(outputFormat.toUpperCase());
+                builder.outputFormats(format);
             }
         } else {
-            // Fallback to Maven plugin configuration
+            // Use Maven plugin configuration for output format
             try {
                 OutputFormat format = OutputFormat.valueOf(outputFormat.toUpperCase());
-                config.outputFormats(format);
+                builder.outputFormats(format);
             } catch (IllegalArgumentException e) {
                 throw new MojoExecutionException("Invalid output format: " + outputFormat);
             }
         }
 
-        // Set validation from application config
-        Boolean appValidation = appCompilation.isValidation();
-        if (appValidation != null) {
-            config.validateTranslations(appValidation);
-        } else {
-            // Fallback to Maven plugin configuration
-            config.validateTranslations(validateTranslations);
-        }
+        // Use Maven plugin parameters for compilation-specific settings
+        builder.validateTranslations(validateTranslations);
+        builder.minifyOutput(minifyOutput);
 
-        // Set minify output from application config
-        Boolean appMinifyOutput = appCompilation.isMinifyOutput();
-        if (appMinifyOutput != null) {
-            config.minifyOutput(appMinifyOutput);
-        } else {
-            // Fallback to Maven plugin configuration
-            config.minifyOutput(minifyOutput);
-        }
-
-        return config;
+        return builder;
     }
 
     /**
@@ -385,6 +386,17 @@ public class CompileMojo extends AbstractFluentI18nMojo {
          */
         private final int translatedMessages;
 
+      /**
+       * Represents the size of the output file associated with localized statistics.
+       *
+       * This variable stores the size of the file in bytes and is used to provide information
+       * about the resource usage or output generated as part of the localization process.
+       *
+       * It is initialized during the creation of the {@code LocaleStats} object and remains
+       * constant throughout its lifecycle.
+       */
+      private final Map<String, Integer> outputFileSize;
+
         /**
          * Constructs a new {@code LocaleStats} instance with the specified total number of
          * messages and the number of translated messages.
@@ -392,9 +404,10 @@ public class CompileMojo extends AbstractFluentI18nMojo {
          * @param totalMessages the total number of messages available for a specific locale
          * @param translatedMessages the number of messages that have been translated for the locale
          */
-        public LocaleStats(int totalMessages, int translatedMessages) {
+        public LocaleStats(int totalMessages, int translatedMessages, Map<String, Integer> outputFileSize) {
             this.totalMessages = totalMessages;
             this.translatedMessages = translatedMessages;
+            this.outputFileSize = outputFileSize;
         }
 
         /**
@@ -409,6 +422,8 @@ public class CompileMojo extends AbstractFluentI18nMojo {
          * @return the total count of translated messages
          */
         public int getTranslatedMessages() { return translatedMessages; }
+
+      public Map<String, Integer> getOutputFileSize() { return outputFileSize; }
 
         /**
          * Determines whether all messages have been translated.
@@ -436,5 +451,17 @@ public class CompileMojo extends AbstractFluentI18nMojo {
         public double getCompletionPercentage() {
             return totalMessages > 0 ? (translatedMessages * 100.0 / totalMessages) : 0.0;
         }
+    }
+
+    private String formatBytesHumanReadable(Integer bytes) {
+      if (bytes == null) {
+        return "0 bytes";
+      }
+      if (bytes < 1024) {
+        return bytes + " bytes";
+      }
+      int exp = (int) (Math.log(bytes) / Math.log(1024));
+      String pre = "KMGTPE".charAt(exp-1) + "";
+      return String.format("%.1f %sB", bytes / Math.pow(1024, exp), pre);
     }
 }

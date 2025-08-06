@@ -22,9 +22,16 @@ public class ExtractedMessage {
      */
     private String naturalText;
     /**
-     * Represents the contextual information of the extracted message.
-     * This is used to disambiguate translations that might depend on
-     * specific contexts or usages in the source code.
+     * The immutable context key used for hash generation and unique identification.
+     * This key ensures that messages with the same text but different contexts
+     * have different hashes and can be translated separately.
+     */
+    private String contextKey;
+    
+    /**
+     * The mutable context description visible to translators in PO files.
+     * This provides human-readable context information to help translators
+     * understand the usage scenario without affecting the hash.
      */
     private String context;
     /**
@@ -113,6 +120,20 @@ public class ExtractedMessage {
      * @param context the context string to associate with this message
      */
     public void setContext(String context) { this.context = context; }
+    
+    /**
+     * Gets the context key used for hash generation.
+     *
+     * @return the context key for this extracted message
+     */
+    public String getContextKey() { return contextKey; }
+    
+    /**
+     * Sets the context key used for hash generation.
+     *
+     * @param contextKey the context key to set for the message
+     */
+    public void setContextKey(String contextKey) { this.contextKey = contextKey; }
     
     /**
      * Retrieves the type of the message.

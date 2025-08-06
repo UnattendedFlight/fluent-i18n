@@ -10,210 +10,236 @@ import java.time.format.FormatStyle;
 import java.util.Locale;
 
 /**
- * Utility class for internationalization (i18n) used to provide locale-specific messages,
- * translations, date formatting, and pluralization.
- * This class is annotated as a Spring component and can be autowired.
+ * Utility class for internationalization (i18n) features.
+ * Provides methods to translate messages, format dates based on locale,
+ * retrieve the current locale, and handle pluralization.
+ * This class is annotated as a Spring component with the name "i18n".
  */
 @Component("i18n")
 public class I18nTemplateUtils {
     
     /**
-     * Translates the given message into the current locale, optionally formatting
-     * the message with the provided arguments.
+     * Translates the provided message based on the current locale and formatting rules.
+     * The message can include placeholders for variable substitution, which will be
+     * replaced by the provided arguments.
      *
-     * @param message the message key to be translated
-     * @param args optional arguments to format the translated message
-     * @return the translated and optionally formatted message
+     * @param message the message key or string to be translated
+     * @param args optional arguments to be substituted into the message
+     * @return the translated and formatted string based on the current locale
      */
     public String translate(String message, Object... args) {
         return I18n.translate(message, args);
     }
     
     /**
-     * Translates the given message using the current locale and optionally formats it with the provided arguments.
+     * Translates a message string with optional arguments into the current locale.
      *
-     * @param message the message key or literal to be translated
+     * @param message the message to be translated
      * @param args optional arguments to format the message
-     * @return the translated and formatted message based on the current locale
+     * @return the translated and formatted message
      */
     public String t(String message, Object... args) {
         return translate(message, args);
     }
     
     /**
-     * Translates a message within a specified context using the provided arguments and internationalization configuration.
+     * Translates a message within a specific context using internationalization features.
      *
-     * @param context the specific context or category for the message translation
-     * @param message the message to be translated
-     * @param args optional arguments to format the message
-     * @return the translated and formatted message, localized based on the current locale and context
+     * @param context the context for the translation, typically a scope or category
+     * @param message the message to translate
+     * @param args optional arguments to format the translated message
+     * @return the translated message, formatted with the provided arguments if applicable
      */
     public String ctx(String context, String message, Object... args) {
         return I18n.context(context).translate(message, args);
     }
     
     /**
-     * Formats the provided LocalDate object into a locale-specific string
-     * representation based on the current locale settings.
+     * Formats the given date into a localized string representation based on the current locale and a medium display style.
      *
-     * @param date the LocalDate to be formatted
-     * @return the formatted date string in medium style for the current locale
+     * @param date the LocalDate to be formatted; must not be null
+     * @return a string representation of the date in a medium style format localized to the current locale
      */
     public String formatDate(LocalDate date) {
         return date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(I18n.getCurrentLocale()));
     }
     
     /**
-     * Formats a given LocalDateTime object into a localized string representation based on the
-     * medium date and time format style of the current locale.
+     * Formats a given {@link LocalDateTime} object into a string representation
+     * according to the medium format style localized to the current locale.
      *
-     * @param dateTime the LocalDateTime object to be formatted
-     * @return a string representation of the given LocalDateTime in the localized medium format
+     * @param dateTime the {@link LocalDateTime} object to format
+     * @return a locale-aware, medium-style formatted string representation of the date and time
      */
     public String formatDateTime(LocalDateTime dateTime) {
         return dateTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(I18n.getCurrentLocale()));
     }
     
     /**
-     * Retrieves the current locale used for internationalization (i18n) operations.
+     * Retrieves the current locale used for internationalization (i18n) purposes.
      *
-     * @return the current {@link Locale} used for translations, formatting, and other locale-specific operations
+     * @return the current {@link Locale} instance.
      */
     public Locale getCurrentLocale() {
         return I18n.getCurrentLocale();
     }
     
     /**
-     * Determines if a given text has a translation available in the current locale.
+     * Checks if the given text has a translation available in the current locale.
      *
-     * @param text the text to check for translation
-     * @return true if a translation exists for the given text, false otherwise
+     * @param text the text to check for translation availability
+     * @return true if a translation exists for the given text; false otherwise
      */
     public boolean hasTranslation(String text) {
         return I18n.describe(text).hasTranslation();
     }
     
     /**
-     * Returns a PluralHelper instance initialized with the given count.
-     * This helper class is used for defining locale-based pluralization
-     * rules based on the provided count.
+     * Creates a helper instance to handle locale-aware pluralization templates.
+     * The returned {@link PluralHelper} provides methods to set pluralization
+     * messages for different plural forms such as zero, one, two, few, many, and other.
      *
-     * @param count the numeric value used to determine the applicable plural form
-     * @return a PluralHelper instance to configure and format pluralized messages
+     * @param count the number that determines the pluralization form
+     * @return an instance of {@link PluralHelper} for configuring and formatting plural messages
      */
     public PluralHelper plural(Number count) {
         return new PluralHelper(count.intValue());
     }
     
     /**
-     * A helper class to manage pluralization rules and format messages
-     * based on a count value and locale. It provides customizable plural forms
-     * for numbers such as zero, one, two, few, many, and other, allowing
-     * messages to properly align with linguistic pluralization rules.
+     * Provides a utility class for handling pluralization of strings in a locale-aware manner.
+     * This class supports setting messages for various plural forms including zero, one, two,
+     * few, many, and other, based on the specified count.
+     *
+     * The {@code PluralHelper} allows fluent API chaining to configure pluralization messages.
+     * Once configured, the {@code format} method determines the appropriate plural form based
+     * on the count and returns the corresponding message.
      */
     public static class PluralHelper {
         /**
-         * The numeric value representing the count used to determine the appropriate
-         * plural form for messages. This value is used internally to match against
-         * pluralization rules based on the specified language or locale.
+         * Represents the count used to determine the appropriate plural form for a message.
+         * This value is utilized within the pluralization logic to select the correct
+         * form of a message based on locale-specific rules.
+         *
+         * The count is immutable and is assigned at the time of object creation.
          */
         private final int count;
         /**
-         * Represents the pluralization message for the "zero" count in a pluralization rule.
-         * This variable is used to store the message associated with a count of zero,
-         * allowing for proper localization and formatting based on linguistic plural rules.
+         * Represents the message associated with the "zero" plural form in a pluralization context.
+         * The "zero" form is used to define the output message when the count is explicitly zero.
+         *
+         * This variable is part of the pluralization system and plays a key role in locale-aware
+         * message formatting. It is typically set using the fluent API method {@code zero(String message)}.
+         *
+         * The "zero" form is particularly useful in languages or contexts where the message for
+         * a count of "0" is distinct and does not fall under the "other" plural category.
          */
         private String zero, /**
-         * Represents the message or format specifically associated with the singular form ("one")
-         * in the context of pluralization. This is typically used when the count value is equal to 1,
-         * aligning with grammatical rules for singular entities in most languages.
+         * Represents the message to be used for the "one" plural form in locale-aware pluralization.
+         * This variable is used to store a string intended to be displayed when the count is exactly one.
          */
         one, /**
-         * Represents the message template to be used for the "two" pluralization rule
-         * in a pluralization formatting process. This value is typically utilized
-         * for languages where specific grammar rules apply when the count equals two.
+         * Represents a message configured for the "two" plural form.
+         * This variable is intended to hold the message that corresponds to
+         * situations where a count matches the "two" plural category.
+         *
+         * It is set through the {@link PluralHelper#two(String)} method and
+         * used internally by the {@link PluralHelper#format()} method to determine
+         * the appropriate string output for the given count.
          */
         two, /**
-         * Specifies the message template to use when a plural form corresponds to the
-         * "few" category. The "few" category typically applies to certain counts
-         * according to specific pluralization rules of a language.
+         * Represents the message to be used when the "few" plural form is applicable.
+         *
+         * This variable holds the text to be returned for the "few" plural category,
+         * depending on the count and localized pluralization rules. It is part of the
+         * fluent API design of the {@code PluralHelper} class for configuring plural
+         * forms.
          */
         few, /**
-         * Represents the message or format to be used for the "many" pluralization
-         * category. This is utilized when the count falls under the "many" plural form
-         * as determined by linguistic pluralization rules for a particular locale.
+         * Represents the plural message used for the "many" category in a locale-aware pluralization system.
+         * The "many" category is generally applied to values that correspond to large quantities, as determined
+         * by locale-specific rules.
+         *
+         * This field stores the message string that will be used when the plural form is evaluated as "many".
+         * Its value can be set using the {@link PluralHelper#many(String)} method.
          */
         many, /**
-         * Represents the message or text associated with the "other" plural form.
-         * This is used when none of the other plural forms (zero, one, two, few, many) apply.
-         * Commonly utilized in pluralization logic to provide a fallback or default message
-         * that aligns with linguistic pluralization rules.
+         * Represents the fallback or default message to be used in cases where none of the other
+         * pluralization forms (zero, one, two, few, many) is applicable for the current count.
+         *
+         * This field is typically used to define a catch-all message for pluralization scenarios.
          */
         other;
         
         /**
-         * Constructs a PluralHelper instance using the specified count value.
-         * This numeric value determines the applicable pluralization rules
-         * for formatting localized messages.
+         * Constructs a new instance of the PluralHelper for managing plural messages
+         * based on the provided count. This count is used to determine the appropriate
+         * plural form for a message when formatting is performed.
          *
-         * @param count the numeric value used to identify the appropriate plural form
+         * @param count the numerical value representing the quantity, which is used to
+         *              select the correct plural form of a message
          */
         public PluralHelper(int count) {
             this.count = count;
         }
         
         /**
-         * Sets the message to be used for the zero plural form.
+         * Sets the message corresponding to the "zero" plural form in the pluralization process.
+         * This method allows you to provide a specific message when the count is zero.
          *
-         * @param message the message to represent the zero plural form
-         * @return the current instance of PluralHelper for method chaining
+         * @param message the message to use for the "zero" plural form
+         * @return the current instance of {@code PluralHelper} for method chaining
          */
         public PluralHelper zero(String message) { this.zero = message; return this; }
         /**
-         * Sets the message for the "one" pluralization rule.
+         * Sets the message for the singular (one) form of the pluralization.
+         * This method allows defining the string that should be used for the singular
+         * case in a pluralization context.
          *
-         * @param message the message to use when the pluralization rule matches "one"
-         * @return the current instance of PluralHelper for method chaining
+         * @param message the message to represent the singular form
+         * @return the current instance of {@code PluralHelper} for fluent chaining
          */
         public PluralHelper one(String message) { this.one = message; return this; }
         /**
-         * Sets the message for the "two" pluralization form and returns the current
-         * instance of the PluralHelper for method chaining.
+         * Sets the message corresponding to the "two" plural form and returns the
+         * current instance of {@code PluralHelper} for method chaining.
          *
-         * @param message the message to associate with the "two" pluralization form
-         * @return the current instance of PluralHelper to allow method chaining
+         * @param message the message to be used for the "two" plural form
+         * @return the current instance of {@code PluralHelper}, allowing for further chaining of methods
          */
         public PluralHelper two(String message) { this.two = message; return this; }
         /**
-         * Sets the message associated with the 'few' plural form.
-         * This is typically used for counts that correspond to the 'few' category in pluralization rules.
+         * Sets the message corresponding to the "few" plural form for the current instance.
+         * This method enables fluent API chaining by returning the instance itself.
          *
-         * @param message the message to use for the 'few' plural form
-         * @return the current instance of PluralHelper for method chaining
+         * @param message the message to associate with the "few" plural form
+         * @return the current instance of {@code PluralHelper}
          */
         public PluralHelper few(String message) { this.few = message; return this; }
         /**
-         * Sets the message for the "many" pluralization rule and returns the current instance.
+         * Sets the message to be used for the "many" plural form and returns the current instance.
+         * This allows chaining of plural form configurations.
          *
-         * @param message the message to use for the "many" pluralization rule
-         * @return the current instance of {@code PluralHelper} for method chaining
+         * @param message the message to associate with the "many" plural form
+         * @return the current instance of {@code PluralHelper} with the "many" message updated
          */
         public PluralHelper many(String message) { this.many = message; return this; }
         /**
-         * Sets the message for the "other" plural form and returns the updated PluralHelper instance.
+         * Sets the message for the "other" plural form.
+         * This is used in cases that do not match any of the specific plural categories
+         * such as zero, one, two, few, or many.
          *
-         * @param message the message associated with the "other" plural category
-         * @return the updated PluralHelper instance allowing method chaining
+         * @param message the message to be used for the "other" plural form
+         * @return the current instance of {@code PluralHelper} for method chaining
          */
         public PluralHelper other(String message) { this.other = message; return this; }
         
         /**
-         * Formats a localized message based on the defined pluralization rules
-         * for the count value. It utilizes the configured messages for zero, one,
-         * two, few, many, or other plural forms if they are provided.
+         * Generates a formatted string based on the specified count and plural forms.
+         * This method evaluates the pre-configured messages for various plural categories
+         * (zero, one, two, few, many, other) to determine the appropriate message to return.
          *
-         * @return the formatted message according to the pluralization rules
-         *         and the count value.
+         * @return The formatted string corresponding to the most suitable plural form for the given count.
          */
         public String format() {
             var builder = I18n.plural(count);
@@ -227,10 +253,11 @@ public class I18nTemplateUtils {
         }
         
         /**
-         * Returns a string representation of the object by formatting its message
-         * based on the count value and specified pluralization rules.
+         * Converts the {@code PluralHelper} instance into a string representation.
+         * This method returns the formatted message based on the configured pluralization
+         * rules and the specified count.
          *
-         * @return the formatted string representation of the object.
+         * @return A formatted text string determined by the count and pluralization rules.
          */
         @Override
         public String toString() {

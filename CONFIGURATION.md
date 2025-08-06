@@ -18,7 +18,7 @@ This guide covers all configuration options for Fluent i18n, including Maven plu
 <plugin>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-maven-plugin</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
     <executions>
         <execution>
             <goals>
@@ -36,7 +36,7 @@ This guide covers all configuration options for Fluent i18n, including Maven plu
 <plugin>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-maven-plugin</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
     <configuration>
         <!-- PO file directory -->
         <poDirectory>src/main/resources/i18n/po</poDirectory>

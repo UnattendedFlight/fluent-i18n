@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +34,8 @@ import java.util.regex.Pattern;
  * translations.
  */
 public class PoFileParser {
+
+  private static final Logger log = Logger.getLogger(PoFileParser.class.getName());
 
     /**
      * Defines the pattern used to match the msgid entry in a PO file.
@@ -143,7 +146,7 @@ public class PoFileParser {
         boolean inPlural = false;
         StringBuilder currentMsgIdBuilder = new StringBuilder();
 
-        System.out.println("Parsing PO file: " + poFile + " with " + lines.size() + " lines");
+        log.fine("Parsing PO file: " + poFile + " with " + lines.size() + " lines");
 
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
@@ -282,7 +285,7 @@ public class PoFileParser {
         PoMetadata metadata = new PoMetadata();
         metadata.setLanguage(extractLocaleFromFileName(poFile.getFileName().toString()));
 
-        System.out.println("Parsed " + entries.size() + " translations from " + poFile);
+        log.fine("Parsed " + entries.size() + " translations from " + poFile);
         return new TranslationData(entries, metadata);
     }
 

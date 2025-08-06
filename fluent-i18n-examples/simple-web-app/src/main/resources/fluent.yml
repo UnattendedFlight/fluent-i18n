@@ -1,0 +1,37 @@
+# Fluent i18n Configuration
+# This file configures the fluent-i18n library for the application
+
+# Base path where translation files are located (relative to classpath)
+basePath: "i18n"
+
+# Supported locales for the application
+supportedLocales: [en, nb, sv, da, fi, fr, de, es, it, pt, nl, pl, ru, zh, ja, ko]
+
+# Default locale to use when no specific locale is set
+defaultLocale: "en"
+
+# Character encoding for reading translation files
+encoding: "UTF-8"
+
+# Message source type (auto, binary, json, properties)
+# auto: automatically detect the best available format
+# binary: use binary format (most efficient)
+# json: use JSON format
+# properties: use properties format
+messageSourceType: "binary"
+
+# Caching configuration
+caching:
+  enabled: true
+  timeoutSeconds: 300
+
+# Auto-reload configuration (for development)
+autoReload:
+  enabled: false
+  intervalSeconds: 60
+
+# Whether to enable fallback to original text when translation is not found
+fallback: true
+
+# Whether to log missing translations (useful for development)
+logMissingTranslations: false

@@ -21,7 +21,23 @@ public class ContextBuilder {
      * It plays a critical role in the translation lifecycle by functioning as a namespace
      * for message resolution and generation.
      */
-    private final String context;
+    private String context;
+
+    /**
+     * Represents a unique identifier or qualifier to disambiguate translations
+     * and natural text within a given context.
+     *
+     * Used as part of the translation process to ensure localized text can be
+     * differentiated across different usage scenarios, avoiding accidental collisions
+     * when the same text string appears in multiple contexts. The `contextKey`
+     * plays a critical role in generating hashes for translations and resolving
+     * locale-specific text accurately.
+     *
+     * Edge case: Ensure this key is unique within its intended scope to prevent
+     * incorrect translations. Duplication or overly generic keys may undermine
+     * the integrity of localized content.
+     */
+    private final String contextKey;
     /**
      * Provides the source of translations for natural text within the context.
      * This variable is used to resolve translations based on a specific locale and
@@ -59,11 +75,17 @@ public class ContextBuilder {
      * @param hashGenerator The hash generator responsible for producing consistent
      *                      hashes for natural text, optionally including context.
      */
-    public ContextBuilder(String context, NaturalTextMessageSource messageSource,
+    public ContextBuilder(String contextKey, String context, NaturalTextMessageSource messageSource,
                          HashGenerator hashGenerator) {
+        this.contextKey = contextKey;
         this.context = context;
         this.messageSource = messageSource;
         this.hashGenerator = hashGenerator;
+    }
+
+    public ContextBuilder description(String context) {
+        this.context = context;
+        return this;
     }
     
     /**
@@ -77,7 +99,7 @@ public class ContextBuilder {
      *         otherwise, the original text formatted with the supplied arguments
      */
     public String translate(String naturalText, Object... args) {
-        String contextualHash = hashGenerator.generateHash(naturalText, context);
+        String contextualHash = hashGenerator.generateHash(naturalText, contextKey);
         Locale locale = I18n.getCurrentLocale();
         
         if (messageSource != null) {
@@ -103,7 +125,7 @@ public class ContextBuilder {
      *         and the provided arguments.
      */
     public MessageDescriptor describe(String naturalText, Object... args) {
-        String contextualHash = hashGenerator.generateHash(naturalText, context);
+        String contextualHash = hashGenerator.generateHash(naturalText, contextKey);
         return new MessageDescriptor(contextualHash, naturalText, args);
     }
 }

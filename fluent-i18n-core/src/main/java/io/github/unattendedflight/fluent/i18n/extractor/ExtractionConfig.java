@@ -101,10 +101,18 @@ public class ExtractionConfig {
      */
     // Extraction patterns
     private List<String> methodCallPatterns = new ArrayList<>(Arrays.asList(
-        "I18n\\.translate\\s*\\(\\s*\"([^\"]+)\"",
-        "I18n\\.describe\\s*\\(\\s*\"([^\"]+)\"",
-        "I18n\\.t\\s*\\(\\s*\"([^\"]+)\"",
-        "I18n\\.context\\([^)]+\\)\\.translate\\s*\\(\\s*\"([^\"]+)\""
+        // Context with description - handles multi-line formatting with proper parentheses matching
+        "(?s)I18n\\s*\\.\\s*context\\s*\\(([^)]+)\\)\\s*\\.\\s*description\\s*\\((.+?)\\)\\s*\\.\\s*translate\\s*\\((.+?)\\)",
+        
+        // Context only - handles multi-line formatting
+        "(?s)I18n\\s*\\.\\s*context\\s*\\(([^)]+)\\)\\s*\\.\\s*translate\\s*\\((.+?)\\)",
+        
+        // Regular translate - handles multi-line
+        "(?s)I18n\\s*\\.\\s*translate\\s*\\((.+?)\\)",
+        
+        // Other methods
+        "(?s)I18n\\s*\\.\\s*describe\\s*\\((.+?)\\)",
+        "(?s)I18n\\s*\\.\\s*t\\s*\\((.+?)\\)"
     ));
     
     /**
