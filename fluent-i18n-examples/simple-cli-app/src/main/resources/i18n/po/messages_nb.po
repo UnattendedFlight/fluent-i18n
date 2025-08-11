@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Fluent i18n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-06T15:37:12.3923334\n"
-"PO-Revision-Date: 2025-08-06T15:37:12.3923334\n"
+"POT-Creation-Date: 2025-08-08T11:59:50.4995059\n"
+"PO-Revision-Date: 2025-08-08T11:59:50.4995059\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -19,7 +19,7 @@ msgstr ""
 #. hash: vk4P7xNNE-J
 #. context: Seeing a person duck
 msgid "I saw her duck"
-msgstr "Jeg så henne dukke"
+msgstr "I saw her duck"
 
 #: src\main\java\com\example\fluenti18n\Application.java:14
 #: src\main\java\com\example\fluenti18n\Application.java:27
@@ -27,12 +27,12 @@ msgstr "Jeg så henne dukke"
 #: src\main\java\com\example\fluenti18n\ApplicationProgrammaticConfig.java:25
 #. hash: bq3cgCJBw7g
 msgid "Hello and welcome!"
-msgstr "Hei og velkommen!"
+msgstr "Hello and welcome!"
 
 #: src\main\java\com\example\fluenti18n\Application.java:17
 #: src\main\java\com\example\fluenti18n\ApplicationProgrammaticConfig.java:15
 #. hash: EQf8K_wMMwC
 #. context: Seeing someone's pet duck
 msgid "I saw her duck"
-msgstr "Jeg så anda hennes"
+msgstr "I saw her duck"
 

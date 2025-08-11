@@ -6,25 +6,12 @@ basePath: "i18n"
 
 # Supported locales for the application
 supportedLocales:
-      - en
       - nb
-      - sv
-      - da
-      - fi
-      - fr
-      - de
-      - es
-      - it
-      - pt
-      - nl
-      - pl
-      - ru
-      - zh
-      - ja
-      - ko
+      - nn
+      - en
 
 # Default locale to use when no specific locale is set
-defaultLocale: "en"
+defaultLocale: "nb"
 
 # Character encoding for reading translation files
 encoding: "UTF-8"
@@ -50,4 +37,4 @@ autoReload:
 fallback: true
 
 # Whether to log missing translations (useful for development)
-logMissingTranslations: false
+logMissingTranslations: true

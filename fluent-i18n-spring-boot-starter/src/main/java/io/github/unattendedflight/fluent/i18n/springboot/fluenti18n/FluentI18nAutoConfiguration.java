@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -26,7 +27,7 @@ public class FluentI18nAutoConfiguration {
      * Provides the FluentConfig bean loaded from fluent.yml or application configuration.
      */
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(FluentConfig.class)
     public FluentConfig fluentConfig() {
         FluentConfigLoader loader = new FluentConfigLoader();
         return loader.load();
@@ -45,13 +46,13 @@ public class FluentI18nAutoConfiguration {
         }
         
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(FluentI18nWebInterceptor.class)
         public FluentI18nWebInterceptor fluentI18nWebInterceptor() {
             return new FluentI18nWebInterceptor(config);
         }
         
         @Override
-        public void addInterceptors(InterceptorRegistry registry) {
+        public void addInterceptors(@NonNull InterceptorRegistry registry) {
             // Add our interceptor that handles locale resolution in the proper order
             registry.addInterceptor(fluentI18nWebInterceptor());
         }

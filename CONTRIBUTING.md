@@ -360,7 +360,7 @@ public class TestData {
  * }</pre>
  * 
  * @author Your Name
- * @since 0.1.4
+ * @since 0.1.5
  * @see ExtractionConfig
  * @see ExtractionResult
  */
@@ -448,7 +448,7 @@ Before releasing:
 mvn clean install
 
 # 4. Create release tag
-git tag v0.1.4
+git tag v0.1.5
 git push origin --tags
 
 # 5. Create GitHub release

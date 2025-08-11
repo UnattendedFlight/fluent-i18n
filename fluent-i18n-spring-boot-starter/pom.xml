@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.unattendedflight.fluent</groupId>
         <artifactId>fluent-i18n-parent</artifactId>
-        <version>0.1.4</version>
+        <version>0.1.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>io.github.unattendedflight.fluent</groupId>
             <artifactId>fluent-i18n-core</artifactId>
-            <version>0.1.4</version>
+            <version>0.1.5</version>
         </dependency>
 
         <!-- Spring Boot Starter Web -->

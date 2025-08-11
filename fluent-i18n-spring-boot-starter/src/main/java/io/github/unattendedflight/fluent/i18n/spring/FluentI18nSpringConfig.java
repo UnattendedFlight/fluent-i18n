@@ -4,6 +4,7 @@ import io.github.unattendedflight.fluent.i18n.I18n;
 import io.github.unattendedflight.fluent.i18n.config.FluentConfig;
 import io.github.unattendedflight.fluent.i18n.core.MessageSourceFactory;
 import io.github.unattendedflight.fluent.i18n.core.NaturalTextMessageSource;
+import io.github.unattendedflight.fluent.i18n.springboot.fluenti18n.FluentI18nInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,7 +26,7 @@ public class FluentI18nSpringConfig {
 
     @Bean
     @Primary
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(I18nTemplateUtils.class)
     public I18nTemplateUtils i18nTemplateUtils() {
         return new I18nTemplateUtils();
     }
@@ -39,7 +40,7 @@ public class FluentI18nSpringConfig {
      */
     @Bean
     @Primary
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(NaturalTextMessageSource.class)
     public NaturalTextMessageSource naturalTextMessageSource(FluentConfig fluentConfig) {
         // Create a Spring-aware message source that uses classpath-based loading
       NaturalTextMessageSource messageSource = MessageSourceFactory.createMessageSource(fluentConfig);
@@ -65,13 +66,15 @@ public class FluentI18nSpringConfig {
     }
     
     /**
-     * Initializes the fluent-i18n system with the Spring configuration.
-     * This method is called after all beans are created to ensure proper initialization.
+     * Provides a Spring-managed bean to initialize the Fluent I18n system with the given message source.
+     * Ensures i18n translations are resolved consistently within the application context.
      *
-     * @param fluentConfig the fluent configuration
+     * @param messageSource the message source providing translations for the i18n system; must not be null.
+     *                      If misconfigured, translation lookups may fail or fallback to default behavior.
+     * @return a fully initialized {@link FluentI18nInitializer} for integration with the i18n system.
      */
     @Bean
-    public FluentI18nInitializer fluentI18nInitializer(FluentConfig fluentConfig) {
-        return new FluentI18nInitializer(fluentConfig);
+    public FluentI18nInitializer fluentI18nInitializer(NaturalTextMessageSource messageSource) {
+        return new FluentI18nInitializer(messageSource);
     }
 } 
