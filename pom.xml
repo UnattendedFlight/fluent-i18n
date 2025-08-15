@@ -6,7 +6,7 @@
 
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-parent</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
     <packaging>pom</packaging>
 
     <name>Fluent i18n</name>

@@ -22,6 +22,7 @@ import io.github.unattendedflight.fluent.i18n.extractor.ExtractionResult;
 import io.github.unattendedflight.fluent.i18n.extractor.MessageExtractor;
 
 import java.io.IOException;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * Maven plugin goal to extract translatable messages from source code and synchronize them with PO files.
@@ -44,7 +45,7 @@ import java.io.IOException;
  * - MojoExecutionException: Thrown when there is an error during the extraction or synchronization process.
  * - MojoFailureException: Thrown when the plugin execution fails due to a configuration or runtime issue.
  */
-@Mojo(name = "extract", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+@Mojo(name = "extract", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class ExtractMojo extends AbstractFluentI18nMojo {
 
     /**

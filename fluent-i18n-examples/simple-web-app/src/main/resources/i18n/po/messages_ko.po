@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Fluent i18n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-08T11:59:47.3285928\n"
-"PO-Revision-Date: 2025-08-08T11:59:47.3285928\n"
+"POT-Creation-Date: 2025-08-12T18:20:04.1358255\n"
+"PO-Revision-Date: 2025-08-12T18:20:04.1358255\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ko\n"
@@ -54,17 +54,17 @@ msgstr "번역가를 위한 표준 PO 파일 워크플로"
 msgid "Status"
 msgstr "상태"
 
-#: src\main\resources\templates\home.html:6
-#. hash: 0sf2vgmklvS
-msgid "Home Page"
-msgstr "홈페이지"
-
 #: src\main\resources\templates\home.html:21
 #: src\main\resources\templates\orders.html:32
 #: src\main\resources\templates\user-profile.html:23
 #. hash: pP5lJk7327O
 msgid "Language"
 msgstr "언어"
+
+#: src\main\resources\templates\home.html:6
+#. hash: 0sf2vgmklvS
+msgid "Home Page"
+msgstr "홈페이지"
 
 #: src\main\resources\templates\orders.html:59
 #. hash: gHWzWiheMAp
@@ -105,11 +105,6 @@ msgstr "개발자에게 보이지 않는 해시 기반 키"
 #. hash: HUEFoHB96r_
 msgid "Key Features"
 msgstr "주요 기능"
-
-#: src\main\java\com\example\fluenti18n\service\UserService.java:31
-#. hash: DegN43Ao26d
-msgid "Found user: {}"
-msgstr "사용자를 찾았습니다: {}"
 
 #: src\main\resources\templates\orders.html:108
 #: src\main\resources\templates\user-profile.html:53
@@ -210,11 +205,6 @@ msgstr "사용자 프로필 보기"
 #. hash: f_QK0n0bS4d
 msgid "Pending Orders"
 msgstr "보류 중인 주문"
-
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:64
-#. hash: PI9cX1qs926
-msgid "User Profile for {}"
-msgstr "0]에 대한 사용자 프로필"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:20
 #. hash: MxVRsN5BV8m

@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Fluent i18n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-08T11:59:47.325806\n"
-"PO-Revision-Date: 2025-08-08T11:59:47.325806\n"
+"POT-Creation-Date: 2025-08-12T18:20:04.133235\n"
+"PO-Revision-Date: 2025-08-12T18:20:04.133235\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fi\n"
@@ -54,17 +54,17 @@ msgstr "Standardi PO-tiedoston työnkulku kääntäjille"
 msgid "Status"
 msgstr "Tila"
 
-#: src\main\resources\templates\home.html:6
-#. hash: 0sf2vgmklvS
-msgid "Home Page"
-msgstr "Kotisivu"
-
 #: src\main\resources\templates\home.html:21
 #: src\main\resources\templates\orders.html:32
 #: src\main\resources\templates\user-profile.html:23
 #. hash: pP5lJk7327O
 msgid "Language"
 msgstr "Kieli"
+
+#: src\main\resources\templates\home.html:6
+#. hash: 0sf2vgmklvS
+msgid "Home Page"
+msgstr "Kotisivu"
 
 #: src\main\resources\templates\orders.html:59
 #. hash: gHWzWiheMAp
@@ -105,11 +105,6 @@ msgstr "Hash-pohjaiset avaimet näkymättömissä kehittäjille"
 #. hash: HUEFoHB96r_
 msgid "Key Features"
 msgstr "Tärkeimmät ominaisuudet"
-
-#: src\main\java\com\example\fluenti18n\service\UserService.java:31
-#. hash: DegN43Ao26d
-msgid "Found user: {}"
-msgstr "Löytyi käyttäjä: {}"
 
 #: src\main\resources\templates\orders.html:108
 #: src\main\resources\templates\user-profile.html:53
@@ -210,11 +205,6 @@ msgstr "Näytä käyttäjäprofiilia"
 #. hash: f_QK0n0bS4d
 msgid "Pending Orders"
 msgstr "Vireillä olevat tilaukset"
-
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:64
-#. hash: PI9cX1qs926
-msgid "User Profile for {}"
-msgstr "Käyttäjäprofiili käyttäjälle {}"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:20
 #. hash: MxVRsN5BV8m

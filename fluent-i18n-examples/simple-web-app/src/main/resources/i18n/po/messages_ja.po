@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Fluent i18n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-08T11:59:47.3359321\n"
-"PO-Revision-Date: 2025-08-08T11:59:47.3359321\n"
+"POT-Creation-Date: 2025-08-12T18:20:04.1420619\n"
+"PO-Revision-Date: 2025-08-12T18:20:04.1420619\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -54,17 +54,17 @@ msgstr "翻訳者のための標準的なPOファイルのワークフロー"
 msgid "Status"
 msgstr "ステータス"
 
-#: src\main\resources\templates\home.html:6
-#. hash: 0sf2vgmklvS
-msgid "Home Page"
-msgstr "ホームページ"
-
 #: src\main\resources\templates\home.html:21
 #: src\main\resources\templates\orders.html:32
 #: src\main\resources\templates\user-profile.html:23
 #. hash: pP5lJk7327O
 msgid "Language"
 msgstr "言語"
+
+#: src\main\resources\templates\home.html:6
+#. hash: 0sf2vgmklvS
+msgid "Home Page"
+msgstr "ホームページ"
 
 #: src\main\resources\templates\orders.html:59
 #. hash: gHWzWiheMAp
@@ -105,11 +105,6 @@ msgstr "開発者には見えないハッシュベースのキー"
 #. hash: HUEFoHB96r_
 msgid "Key Features"
 msgstr "主な特徴"
-
-#: src\main\java\com\example\fluenti18n\service\UserService.java:31
-#. hash: DegN43Ao26d
-msgid "Found user: {}"
-msgstr "ユーザーが見つかりました：{}"
 
 #: src\main\resources\templates\orders.html:108
 #: src\main\resources\templates\user-profile.html:53
@@ -210,11 +205,6 @@ msgstr "ユーザープロフィールを表示"
 #. hash: f_QK0n0bS4d
 msgid "Pending Orders"
 msgstr "保留中の注文"
-
-#: src\main\java\com\example\fluenti18n\controller\HomeController.java:64
-#. hash: PI9cX1qs926
-msgid "User Profile for {}"
-msgstr "0]のユーザープロフィール"
 
 #: src\main\java\com\example\fluenti18n\model\OrderStatus.java:20
 #. hash: MxVRsN5BV8m

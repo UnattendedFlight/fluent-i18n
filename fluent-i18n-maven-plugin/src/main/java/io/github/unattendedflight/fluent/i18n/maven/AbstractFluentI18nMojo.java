@@ -195,6 +195,67 @@ public abstract class AbstractFluentI18nMojo extends AbstractMojo {
   @Parameter(property = "fluent.i18n.skip", defaultValue = "false")
   protected boolean skip;
 
+  /**
+   * The group ID of a Maven dependency that contains the Fluent i18n configuration.
+   * When specified together with {@code configDependencyArtifactId}, the plugin will
+   * attempt to load configuration from the classpath resources provided by this dependency.
+   * This is useful for shared configuration modules like "common-config" that multiple
+   * services depend on.
+   * <p>
+   * Example: {@code com.example.mycompany}
+   * <p>
+   * Configurable through the Maven property {@code fluent.i18n.configDependency.groupId}.
+   */
+  @Parameter(property = "fluent.i18n.configDependency.groupId")
+  protected String configDependencyGroupId;
+
+  /**
+   * The artifact ID of a Maven dependency that contains the Fluent i18n configuration.
+   * When specified together with {@code configDependencyGroupId}, the plugin will
+   * attempt to load configuration from the classpath resources provided by this dependency.
+   * This is useful for shared configuration modules like "common-config" that multiple
+   * services depend on.
+   * <p>
+   * Example: {@code common-config}
+   * <p>
+   * Configurable through the Maven property {@code fluent.i18n.configDependency.artifactId}.
+   */
+  @Parameter(property = "fluent.i18n.configDependency.artifactId")
+  protected String configDependencyArtifactId;
+
+  /**
+   * The resource path within the configuration dependency where the Fluent i18n configuration
+   * file is located. This path is relative to the classpath root of the dependency.
+   * <p>
+   * Examples:
+   * <ul>
+   *   <li>{@code fluent.yml} (default)</li>
+   *   <li>{@code config/i18n/fluent.yml}</li>
+   *   <li>{@code application.yml}</li>
+   * </ul>
+   * <p>
+   * Configurable through the Maven property {@code fluent.i18n.configDependency.resourcePath}.
+   * The default value is {@code fluent.yml}.
+   */
+  @Parameter(property = "fluent.i18n.configDependency.resourcePath", defaultValue = "fluent.yml")
+  protected String configDependencyResourcePath;
+
+  /**
+   * Enables automatic discovery of Fluent i18n configuration files in the classpath.
+   * When enabled, the plugin will search for {@code fluent.yml}, {@code application.yml},
+   * or {@code application.yaml} files in the classpath of dependencies without requiring
+   * explicit dependency coordinates to be specified.
+   * <p>
+   * This is particularly useful when you have a common configuration module but don't
+   * want to explicitly specify its coordinates, or when multiple dependencies might
+   * contain configuration files.
+   * <p>
+   * Configurable through the Maven property {@code fluent.i18n.autodiscoverConfig}.
+   * The default value is {@code true}.
+   */
+  @Parameter(property = "fluent.i18n.autodiscoverConfig", defaultValue = "true")
+  protected boolean autodiscoverConfig;
+
   private FluentConfig loadedFluentConfig = null;
 
   /**
@@ -242,13 +303,18 @@ public abstract class AbstractFluentI18nMojo extends AbstractMojo {
   protected List<String> getExtractionPatternsList() {
     if (extractionPatterns == null || extractionPatterns.isEmpty()) {
       return Arrays.asList(
-          "(?s)I18n\\s*\\.\\s*context\\s*\\(([^)]+)\\)\\s*\\.\\s*description\\s*\\((.+?)\\)\\s*\\.\\s*translate\\s*\\((.+?)\\)",
-          "(?s)I18n\\s*\\.\\s*context\\s*\\(([^)]+)\\)\\s*\\.\\s*translate\\s*\\((.+?)\\)",
-          "(?s)I18n\\s*\\.\\s*translate\\s*\\((.+?)\\)",
-          "(?s)I18n\\s*\\.\\s*t\\s*\\((.+?)\\)",
-          "@Translatable\\s*\\(\\s*\"([^\"]+)\"",
-          "\\$\\{@i18n\\.translate\\('([^']+)'\\)\\}",
-          "\\$\\{@i18n\\.t\\('([^']+)'\\)\\}"
+          // Context with description
+          "(?s)I18n\\s*\\.\\s*context\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)\\s*\\.\\s*description\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)\\s*\\.\\s*translate\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+
+          // Context only
+          "(?s)I18n\\s*\\.\\s*context\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)\\s*\\.\\s*translate\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+
+          // Regular translate
+          "(?s)I18n\\s*\\.\\s*translate\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+
+          // Other methods
+          "(?s)I18n\\s*\\.\\s*describe\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+          "(?s)I18n\\s*\\.\\s*t\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)"
       );
     }
     return extractionPatterns;
@@ -283,6 +349,7 @@ public abstract class AbstractFluentI18nMojo extends AbstractMojo {
    * - The format used for output files (e.g., JSON, properties).
    * - Whether translation validation is enabled.
    * - The encoding used for source files.
+   * - Configuration dependency information if specified.
    * <p>
    * This method is intended to aid in debugging and verifying the configuration
    * of the Fluent i18n plugin during the build lifecycle.
@@ -296,6 +363,13 @@ public abstract class AbstractFluentI18nMojo extends AbstractMojo {
     getLog().info("  Output Format: " + outputFormat);
     getLog().info("  Validate Translations: " + validateTranslations);
     getLog().info("  Source Encoding: " + encoding);
+    
+    // Log dependency configuration if specified
+    if (configDependencyGroupId != null && configDependencyArtifactId != null) {
+      getLog().info("  Configuration Dependency: " + configDependencyGroupId + ":" + configDependencyArtifactId);
+      getLog().info("  Configuration Resource Path: " + configDependencyResourcePath);
+    }
+    getLog().info("  Autodiscover Configuration: " + autodiscoverConfig);
   }
 
   /**
@@ -319,16 +393,28 @@ public abstract class AbstractFluentI18nMojo extends AbstractMojo {
 
   /**
    * Loads the Fluent i18n configuration from the project.
-   * Checks multiple file locations and formats automatically.
+   * Checks multiple file locations and formats automatically, including dependency-based configurations.
    *
    * @return the loaded FluentConfig instance
    */
   protected FluentConfig getConfiguration() {
+    getLog().debug("Loading Fluent i18n configuration");
+    if (autodiscoverConfig) {
+      getLog().debug("Attempting to load Fluent i18n configuration from classpath resources");
+    } else if (configDependencyGroupId != null && configDependencyArtifactId != null) {
+      getLog().debug("Attempting to load Fluent i18n configuration from dependency: " + configDependencyGroupId + ":" + configDependencyArtifactId);
+    }
     if (loadedFluentConfig != null) {
       return loadedFluentConfig;
     }
-    FluentI18nConfigReader configReader = new FluentI18nConfigReader(getLog());
-    loadedFluentConfig = configReader.loadConfiguration(project.getBasedir().toPath());
+    FluentI18nConfigReader configReader = new FluentI18nConfigReader(getLog(), project);
+    loadedFluentConfig = configReader.loadConfiguration(
+        project.getBasedir().toPath(),
+        configDependencyGroupId,
+        configDependencyArtifactId,
+        configDependencyResourcePath,
+        autodiscoverConfig
+    );
     return loadedFluentConfig;
   }
 

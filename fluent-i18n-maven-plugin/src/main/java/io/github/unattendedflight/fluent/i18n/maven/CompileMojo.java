@@ -24,6 +24,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.IOException;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * CompileMojo is a Maven plugin goal that compiles translation files for supported locales
@@ -55,7 +56,7 @@ import java.io.IOException;
  * - Output formats.
  * - Minification and validation preferences.
  */
-@Mojo(name = "compile", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+@Mojo(name = "compile", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyResolution= ResolutionScope.RUNTIME)
 public class CompileMojo extends AbstractFluentI18nMojo {
 
     /**

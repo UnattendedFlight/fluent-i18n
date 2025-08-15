@@ -12,7 +12,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <fluent-i18n.version>0.1.5</fluent-i18n.version>
+        <fluent-i18n.version>0.1.6</fluent-i18n.version>
     </properties>
 
     <dependencies>
@@ -35,7 +35,7 @@
             <plugin>
                 <groupId>io.github.unattendedflight.fluent</groupId>
                 <artifactId>fluent-i18n-maven-plugin</artifactId>
-                <version>0.1.5</version>
+                <version>0.1.6</version>
                 <executions>
                     <execution>
                         <goals>

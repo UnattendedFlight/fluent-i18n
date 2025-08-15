@@ -28,14 +28,14 @@
 <dependency>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-core</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
 </dependency>
 
 <!-- Spring Boot Starter (optional) -->
 <dependency>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-spring-boot-starter</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
 </dependency>
 ```
 
@@ -90,7 +90,7 @@ logMissingTranslations: false
 <plugin>
     <groupId>io.github.unattendedflight.fluent</groupId>
     <artifactId>fluent-i18n-maven-plugin</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
     <executions>
         <execution>
             <goals>

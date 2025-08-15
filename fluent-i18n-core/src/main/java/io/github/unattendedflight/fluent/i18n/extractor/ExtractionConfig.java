@@ -101,18 +101,18 @@ public class ExtractionConfig {
      */
     // Extraction patterns
     private List<String> methodCallPatterns = new ArrayList<>(Arrays.asList(
-        // Context with description - handles multi-line formatting with proper parentheses matching
-        "(?s)I18n\\s*\\.\\s*context\\s*\\(([^)]+)\\)\\s*\\.\\s*description\\s*\\((.+?)\\)\\s*\\.\\s*translate\\s*\\((.+?)\\)",
-        
-        // Context only - handles multi-line formatting
-        "(?s)I18n\\s*\\.\\s*context\\s*\\(([^)]+)\\)\\s*\\.\\s*translate\\s*\\((.+?)\\)",
-        
-        // Regular translate - handles multi-line
-        "(?s)I18n\\s*\\.\\s*translate\\s*\\((.+?)\\)",
-        
+        // Context with description
+        "(?s)I18n\\s*\\.\\s*context\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)\\s*\\.\\s*description\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)\\s*\\.\\s*translate\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+
+        // Context only
+        "(?s)I18n\\s*\\.\\s*context\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)\\s*\\.\\s*translate\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+
+        // Regular translate
+        "(?s)I18n\\s*\\.\\s*translate\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+
         // Other methods
-        "(?s)I18n\\s*\\.\\s*describe\\s*\\((.+?)\\)",
-        "(?s)I18n\\s*\\.\\s*t\\s*\\((.+?)\\)"
+        "(?s)I18n\\s*\\.\\s*describe\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)",
+        "(?s)I18n\\s*\\.\\s*t\\s*\\(((?:[^()\"']|\"[^\"]*\"|'[^']*')+)\\)"
     ));
     
     /**
@@ -124,8 +124,8 @@ public class ExtractionConfig {
      * syntax and extracts the translatable string within quotation marks.
      */
     private List<String> annotationPatterns = new ArrayList<>(Arrays.asList(
-        "@Translatable\\s*\\(\\s*\"([^\"]+)\"",
-        "@Message\\s*\\(\\s*\"([^\"]+)\""
+        "(?s)@Translatable\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)",
+        "(?s)@Message\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)"
     ));
     
     /**
@@ -145,13 +145,13 @@ public class ExtractionConfig {
      * - `<spring:message>` tags with the `code` attribute
      */
     private List<String> templatePatterns = new ArrayList<>(Arrays.asList(
-        "\\$\\{@i18n\\.translate\\('([^']+)'\\)\\}",
-        "\\$\\{@i18nTemplateUtils\\.translate\\('([^']+)'\\)\\}",
-        "\\$\\{@i18nTemplateUtils\\.t\\('([^']+)'\\)\\}",
-        "th:text=\"\\$\\{@i18n\\.translate\\('([^']+)'\\)\\}\"",
-        "th:text=\"\\$\\{@i18nTemplateUtils\\.translate\\('([^']+)'\\)\\}\"",
-        "th:text=\"\\$\\{@i18nTemplateUtils\\.t\\('([^']+)'\\)\\}\"",
-        "<spring:message\\s+code=\"([^\"]+)\""
+        "(?s)\\$\\s*\\{\\s*@i18n\\s*\\.\\s*translate\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*?)'\\s*\\)\\s*\\}",
+        "(?s)\\$\\s*\\{\\s*@i18nTemplateUtils\\s*\\.\\s*translate\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*?)'\\s*\\)\\s*\\}",
+        "(?s)\\$\\s*\\{\\s*@i18nTemplateUtils\\s*\\.\\s*t\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*?)'\\s*\\)\\s*\\}",
+        "(?s)th:text\\s*=\\s*\"\\s*\\$\\s*\\{\\s*@i18n\\s*\\.\\s*translate\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*?)'\\s*\\)\\s*\\}\\s*\"",
+        "(?s)th:text\\s*=\\s*\"\\s*\\$\\s*\\{\\s*@i18nTemplateUtils\\s*\\.\\s*translate\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*?)'\\s*\\)\\s*\\}\\s*\"",
+        "(?s)th:text\\s*=\\s*\"\\s*\\$\\s*\\{\\s*@i18nTemplateUtils\\s*\\.\\s*t\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*?)'\\s*\\)\\s*\\}\\s*\"",
+        "(?s)<spring:message\\s+code\\s*=\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*/?>"
     ));
     
     /**
@@ -174,12 +174,12 @@ public class ExtractionConfig {
      */
     // Plural patterns
     private List<String> pluralPatterns = new ArrayList<>(Arrays.asList(
-        "\\.zero\\s*\\(\\s*\"([^\"]+)\"\\)",
-        "\\.one\\s*\\(\\s*\"([^\"]+)\"\\)",
-        "\\.two\\s*\\(\\s*\"([^\"]+)\"\\)",
-        "\\.few\\s*\\(\\s*\"([^\"]+)\"\\)",
-        "\\.many\\s*\\(\\s*\"([^\"]+)\"\\)",
-        "\\.other\\s*\\(\\s*\"([^\"]+)\"\\)"
+        "(?s)\\.\\s*zero\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)",
+        "(?s)\\.\\s*one\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)",
+        "(?s)\\.\\s*two\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)",
+        "(?s)\\.\\s*few\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)",
+        "(?s)\\.\\s*many\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)",
+        "(?s)\\.\\s*other\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*?)\"\\s*\\)"
     ));
     
     /**
